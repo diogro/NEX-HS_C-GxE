@@ -153,3 +153,4 @@ vignettes/*.pdf
 *.knit.md
 .Rproj.user
 NEX-HS_C-GxE.Rproj
+data/
