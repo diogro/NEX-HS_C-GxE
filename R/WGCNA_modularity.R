@@ -19,7 +19,7 @@ gene_expr_list = list(C = select(gene_expr, Gene, all_of(ID_C)),
                     HS = select(gene_expr, Gene, all_of(ID_HS)))
 
 corr_mat = llply(gene_expr_list, function(x) abs(cor(t(x[,-1]), method = "spearman")))
-s_mat = llply(gene_expr_list, function(x) adjacency(t(x[,-1]), power = 3))
+s_mat = llply(gene_expr_list, function(x) adjacency(t(x[,-1]), power = 6))
 
 #library(patchwork)
 #superheat(abs(corr_mat[[1]]), row.dendrogram = T, col.dendrogram = T) 
