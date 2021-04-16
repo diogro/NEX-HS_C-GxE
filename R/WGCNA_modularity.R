@@ -5,6 +5,8 @@ if(!require(superheat)){install.packages("superheat"); library(superheat)}
 if(!require(here)){install.packages("here"); library(here)}
 if(!require(evolqg)){install.packages("evolqg"); library(evolqg)}
 if(!require(doMC)){install.packages("doMC"); library(doMC)}   
+if(!require(tictoc)){install.packages("tictoc"); library(tictoc)}   
+library(foreach)
 registerDoMC(8)
 
 covariates = read_delim(here::here("data/GXEpaper/Covariates_forGEMMA_Jan82021.txt"), 
@@ -13,10 +15,36 @@ ID_C = filter(covariates, treatment == 1)$ID
 ID_HS = filter(covariates, treatment == 2)$ID
 
 gene_expr = read_delim(here::here("data/GXEpaper/GeneCounts/VOOMCounts_CPM1_head_hsctrl_covfree_4svs_CORRECT_Jan8.21.txt"),
-                       delim = "\t", n_max = Inf)
+                       delim = "\t", n_max = 100)
 
 gene_expr_list = list(C = select(gene_expr, Gene, all_of(ID_C)), 
                     HS = select(gene_expr, Gene, all_of(ID_HS)))
+
+p = nrow(gene_expr)
+x = matrix(NA, p, p)
+included = numeric(p)
+prop_sig = 0.1
+p_cutoff = 1e-4
+checkCorrelations = function(i){
+    sig = 0
+    if(sig <= prop_sig*p){
+        for(j in 1:p){
+            cr_C = cor.test(as.numeric(gene_expr_list[["C"]][i,-1]), as.numeric(gene_expr_list[["C"]][j,-1]))
+            cr_HS = cor.test(as.numeric(gene_expr_list[["HS"]][i,-1]), as.numeric(gene_expr_list[["HS"]][j,-1]))
+            p_value = min(cr_C$p.value, cr_HS$p.value)
+            if(p_value < p_cutoff) { 
+                sig = sig + 1
+            }
+            if(sig > prop_sig*p) break
+        }      
+    }
+} 
+    
+tic()
+foreach(i = 1:(p-1)) %dopar% {
+}
+included_genes = included > prop_sig * p
+toc()
 
 corr_mat = llply(gene_expr_list, function(x) abs(cor(t(x[,-1]), method = "spearman")))
 s_mat = llply(gene_expr_list, function(x) adjacency(t(x[,-1]), power = 6))
