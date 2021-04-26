@@ -154,3 +154,7 @@ vignettes/*.pdf
 .Rproj.user
 NEX-HS_C-GxE.Rproj
 data/
+plots/
+*.Rdata
+*.RData
+graphtool/
