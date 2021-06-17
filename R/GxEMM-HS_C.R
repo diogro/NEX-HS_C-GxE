@@ -26,5 +26,5 @@ GRM = as.matrix(read.table("/Genomics/ayroleslab2/lamaya/bigProject/Datasets/GXE
 out_free_HSC = llply(colnames(expr_df), function(i) GxEMM(expr_df[,i], X = X, K = GRM, Z = Z_all, 
                                              gtype='free', etype='free', ldak_loc=ldak_loc),
                      .parallel = TRUE)
-
+names(out_free_HSC) = colnames(expr_df)
 saveRDS(out_free_HSC, file = "/Genomics/ayroleslab2/diogro/projects/NEX-HS_C-GxE/data/output/GxEmm_all_genes_outlist.rds")
