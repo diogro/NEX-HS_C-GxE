@@ -3,7 +3,7 @@ if(!require(tidyverse)){install.packages("tidyverse"); library(tidyverse)}
 if(!require(superheat)){install.packages("superheat"); library(superheat)}
 if(!require(mcclust)){install.packages("mcclust"); library(mcclust)}
 
-head = read_csv("data/output/6128genes-non_hierarchical_sbm-fit_head_df.csv")
+head = read_csv("data/output/4273genes-conectivity_30-non_hierarchical_sbm-fit_head_df.csv")
 body = read_csv("data/output/6176genes-non_hierarchical_sbm-fit_body_df.csv")
 
 head$tissue = "head"
