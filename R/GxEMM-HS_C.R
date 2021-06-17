@@ -3,7 +3,7 @@ ldak_loc  <- "/Genomics/grid/users/damelo/.local/bin/ldak5.linux "
 
 library(plyr)
 library(doMC)
-registerDoMC(64)
+registerDoMC(32)
 
 expr_df = t(read.table("/Genomics/ayroleslab2/lamaya/bigProject/Datasets/GXEpaper/GeneCounts/VOOMCounts_CPM1_head_hsctrl_covfree_4svs_CORRECT_Jan8.21.txt",
                        row.names = 1))
