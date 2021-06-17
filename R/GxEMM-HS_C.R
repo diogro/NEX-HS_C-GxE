@@ -28,6 +28,3 @@ out_free_HSC = llply(colnames(expr_df), function(i) GxEMM(expr_df[,i], X = X, K 
                      .parallel = TRUE)
 
 saveRDS(out_free_HSC, file = "/Genomics/ayroleslab2/diogro/projects/NEX-HS_C-GxE/data/output/GxEmm_all_genes_outlist.rds")
-
-
-  
