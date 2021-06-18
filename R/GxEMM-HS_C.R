@@ -52,6 +52,7 @@ library(GxEMM)
 library(stringr)
 ldak_loc  <- "/Genomics/grid/users/damelo/.local/bin/ldak5.linux "
 
+print(input_path)
 expr_df = t(read.table(input_path, row.names = 1))
 rownames(expr_df) = gsub("^X", "", rownames(expr_df))
 
