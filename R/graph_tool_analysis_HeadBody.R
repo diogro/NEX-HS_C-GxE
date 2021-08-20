@@ -41,15 +41,19 @@ body_clusters = readClusteringFolder(body_files, body_labels_raw)
 
 n_clusters_df = rbind(
   data.frame(n_clusters = sapply(head_clusters[['non.nested']], function(x) length(unique((x$Block)))),
+             n_genes = sapply(head_clusters[['non.nested']], function(x) length(unique((x$Gene)))),
              cutOff = as.numeric(names(head_clusters[['non.nested']])),
              type = "non.nested", tissue = "head"),
   data.frame(n_clusters = sapply(head_clusters[['nested']], function(x) length(unique((x$B1)))),
+             n_genes = sapply(head_clusters[['nested']], function(x) length(unique((x$Gene)))),
              cutOff = as.numeric(names(head_clusters[['nested']])),
              type = "nested", tissue = "head") ,
   data.frame(n_clusters = sapply(body_clusters[['non.nested']], function(x) length(unique((x$Block)))),
+             n_genes = sapply(body_clusters[['non.nested']], function(x) length(unique((x$Gene)))),
              cutOff = as.numeric(names(body_clusters[['non.nested']])),
              type = "non.nested", tissue = "body"  ),
   data.frame(n_clusters = sapply(body_clusters[['nested']], function(x) length(unique((x$B1)))),
+             n_genes = sapply(body_clusters[['nested']], function(x) length(unique((x$Gene)))),
              cutOff = as.numeric(names(body_clusters[['nested']])),
              type = "nested", tissue = "body")  
                 )
@@ -59,13 +63,41 @@ n_clusters_plot = plot_grid(n_clusters_df %>%
   ggplot(aes(cutOff, n_clusters, groups = type, color= type)) + 
     geom_line(size = 1) + 
     theme_tufte() + background_grid() + theme(legend.position = "top") +
-    ggtitle("Number of clusters - Head - Nested vs non-nested"),
+    ggtitle("Number of clusters - Head - Nested vs non-nested SBM"),
 n_clusters_df %>%
   filter(tissue == "body") %>%
   ggplot(aes(cutOff, n_clusters, groups = type, color= type)) + 
   geom_line(size = 1) + 
   theme_tufte() + background_grid() + theme(legend.position = "top") +
-  ggtitle("Number of clusters - Body - Nested vs non-nested"), ncol = 2)
-
+  ggtitle("Number of clusters - Body - Nested vs non-nested SBM"), ncol = 2)
 save_plot(filename = "data/output/SBM/plots/number_of_gene_clusters_nested-vs-non-nested.png", 
-          n_clusters_plot, base_height = 5, ncol = 2, base_asp = 1.3)
+          n_clusters_plot, base_height = 5, ncol = 2, base_asp = 1.2)
+
+levels_array = laply(head_clusters[['nested']], function(x) 
+  laply(select(x, matches("B")), 
+        function(df) length(unique(df))))    
+levels_array_df = data.frame(levels_array, cutOff = as.numeric(names(head_clusters[['nested']])))
+names(levels_array_df) =  gsub("X", "Level.", names(levels_array_df))
+nested_plot_head = levels_array_df %>% 
+  pivot_longer(Level.1:Level.5) %>%
+  ggplot(aes(cutOff, value, group = name, color = name)) +
+  geom_line(size = 1) + 
+  theme_tufte() + background_grid() + theme(legend.position = "top") +
+  ggtitle("Number of clusters - Head - Nested - All levels")
+
+
+levels_array = laply(body_clusters[['nested']], function(x) 
+  laply(select(x, matches("B")), 
+        function(df) length(unique(df))))    
+levels_array_df = data.frame(levels_array, cutOff = as.numeric(names(body_clusters[['nested']])))
+names(levels_array_df) =  gsub("X", "Level.", names(levels_array_df))
+nested_plot_body = levels_array_df %>% 
+  pivot_longer(Level.1:Level.5) %>%
+  ggplot(aes(cutOff, value, group = name, color = name)) +
+  geom_line(size = 1) + 
+  theme_tufte() + background_grid() + theme(legend.position = "top") +
+  ggtitle("Number of clusters - Body - Nested - All levels")
+
+nested_plot = plot_grid(nested_plot_head, nested_plot_body, ncol = 2)
+save_plot(filename = "data/output/SBM/plots/number_of_gene_clusters_nested-all_levels.png", 
+          nested_plot, base_height = 5, ncol = 2, base_asp = 1.2)
