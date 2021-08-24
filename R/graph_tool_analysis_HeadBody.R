@@ -84,6 +84,11 @@ nested_plot_head = levels_array_df %>%
   geom_line(size = 1) + 
   theme_tufte() + background_grid() + theme(legend.position = "top") +
   ggtitle("Number of clusters - Head - Nested - All levels")
+library(gridExtra)
+png("data/output/SBM/plots/number_of_gene_clusters_nested-all_levels_table_head.png", 
+    height = 50*nrow(levels_array_df), width = 200*ncol(levels_array_df))
+grid.table(levels_array_df)
+dev.off()
 
 
 levels_array = laply(body_clusters[['nested']], function(x) 
@@ -101,3 +106,9 @@ nested_plot_body = levels_array_df %>%
 nested_plot = plot_grid(nested_plot_head, nested_plot_body, ncol = 2)
 save_plot(filename = "data/output/SBM/plots/number_of_gene_clusters_nested-all_levels.png", 
           nested_plot, base_height = 5, ncol = 2, base_asp = 1.2)
+library(gridExtra)
+png("data/output/SBM/plots/number_of_gene_clusters_nested-all_levels_table_body.png", 
+    height = 50*nrow(levels_array_df), width = 200*ncol(levels_array_df))
+grid.table(levels_array_df)
+dev.off()
+
