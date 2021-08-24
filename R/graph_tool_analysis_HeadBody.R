@@ -14,17 +14,17 @@ head_labels_raw = dir("data/output/SBM/clustering/", pattern = "head_cutoff-spea
 body_files = dir("data/output/SBM/clustering/", pattern = "body_cutoff-spearman_val-.*SBM.csv", full.names = T)
 body_labels_raw = dir("data/output/SBM/clustering/", pattern = "body_cutoff-spearman_val-.*SBM.csv")
 
+readClustering = function(file){
+  x = read_csv(file) %>%
+    mutate_at(vars(matches("B")), ~as.numeric(factor(.)))
+}
+
 
 readClusteringFolder <- function(tissue_files, tissue_labels_raw) {
   tissue_labels_df = data.frame(cut0ff = sapply(str_split(tissue_labels_raw,"_"), function(x) str_split(x[[3]], "-")[[1]][2]),
              type = sapply(str_split(tissue_labels_raw,"_"), function(x) str_split(x[[4]], "-")[[1]][1])) %>%
     mutate(type =  ifelse(type == "non", "non.nested", "nested"),
            label = paste(type, cut0ff, sep = "."))
-
-  readClustering = function(file){
-    x = read_csv(file) %>%
-      mutate_at(vars(matches("B")), ~as.numeric(factor(.)))
-  }
 
   tissue_labels_df$cut0ff
   tissue_clusters_raw = lapply(tissue_files, readClustering)
@@ -58,18 +58,12 @@ n_clusters_df = rbind(
              type = "nested", tissue = "body")
                 )
 
-n_clusters_plot = plot_grid(n_clusters_df %>%
-  filter(tissue == "head") %>%
+n_clusters_plot = n_clusters_df %>%
   ggplot(aes(cutOff, n_clusters, groups = type, color= type)) +
     geom_line(size = 1) +
     theme_tufte() + background_grid() + theme(legend.position = "top") +
-    ggtitle("Number of clusters - Head - Nested vs non-nested SBM"),
-n_clusters_df %>%
-  filter(tissue == "body") %>%
-  ggplot(aes(cutOff, n_clusters, groups = type, color= type)) +
-  geom_line(size = 1) +
-  theme_tufte() + background_grid() + theme(legend.position = "top") +
-  ggtitle("Number of clusters - Body - Nested vs non-nested SBM"), ncol = 2)
+    facet_wrap(~tissue, ncol = 2) +
+    ggtitle("Number of clusters - Nested vs non-nested SBM")
 save_plot(filename = "data/output/SBM/plots/number_of_gene_clusters_nested-vs-non-nested.png",
           n_clusters_plot, base_height = 5, ncol = 2, base_asp = 1.2)
 
@@ -84,11 +78,7 @@ nested_plot_head = levels_array_df %>%
   geom_line(size = 1) +
   theme_tufte() + background_grid() + theme(legend.position = "top") +
   ggtitle("Number of clusters - Head - Nested - All levels")
-library(gridExtra)
-png("data/output/SBM/plots/number_of_gene_clusters_nested-all_levels_table_head.png", 
-    height = 50*nrow(levels_array_df), width = 200*ncol(levels_array_df))
-grid.table(levels_array_df)
-dev.off()
+
 
 
 levels_array = laply(body_clusters[['nested']], function(x)
@@ -106,8 +96,13 @@ nested_plot_body = levels_array_df %>%
 nested_plot = plot_grid(nested_plot_head, nested_plot_body, ncol = 2)
 save_plot(filename = "data/output/SBM/plots/number_of_gene_clusters_nested-all_levels.png",
           nested_plot, base_height = 5, ncol = 2, base_asp = 1.2)
+
 library(gridExtra)
-png("data/output/SBM/plots/number_of_gene_clusters_nested-all_levels_table_body.png", 
+png("data/output/SBM/plots/number_of_gene_clusters_nested-all_levels_table_head.png",
+    height = 50*nrow(levels_array_df), width = 200*ncol(levels_array_df))
+grid.table(levels_array_df)
+dev.off()
+png("data/output/SBM/plots/number_of_gene_clusters_nested-all_levels_table_body.png",
     height = 50*nrow(levels_array_df), width = 200*ncol(levels_array_df))
 grid.table(levels_array_df)
 dev.off()
@@ -163,3 +158,8 @@ levels_hist %>%
 save_plot("data/output/SBM/plots/graph_plot_body_cutoff-spearman_val-0.325_clustered-hierarchical-SBM_Levels_Histogram.png",
           levels_histogram_plot_body,
           base_height = 5, ncol = 3, nrow = 2, base_asp = 1.3)
+
+x = readClusteringFolder("data/output/SBM/clustering/body_mcmc_cutoff-spearman_val-0.325_hierarchical-SBM.csv",
+                         "body_mcmc_cutoff-spearman_val-0.325_hierarchical-SBM.csv")$nested$spearman
+laply(select(x, matches("B")),
+        function(df) length(unique(df)))
