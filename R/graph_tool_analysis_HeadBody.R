@@ -152,7 +152,7 @@ levels_hist %>%
   facet_wrap(~levels, ncol = 3, scales = "free") +
   labs(x = "Number of clusters", y = "Posterior density") + theme_cowplot() +
   theme(axis.text.x =  element_text(angle =45) ) +
-  background_grid() + scale_x_continuous(breaks = 1:300) -> levels_histogram_plot_body
+  background_grid() + scale_x_continuous(breaks = 1:300) -> 
 save_plot("data/output/SBM/plots/graph_plot_body_cutoff-spearman_val-0.325_clustered-hierarchical-SBM_Levels_Histogram.png",
           levels_histogram_plot_body,
           base_height = 5, ncol = 3, nrow = 2, base_asp = 1.3)
