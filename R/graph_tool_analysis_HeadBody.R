@@ -122,7 +122,7 @@ for(n in ncol(levels_hist):1){
 }
 levels_hist %>%
   pivot_longer(-levels) %>%
-  filter(value != 0, levels <= 6) %>%
+  filter(value != 0, levels <= 8) %>%
   mutate(levels = paste("Level", levels)) %>%
   mutate(name = as.numeric(gsub("X", "", name))) %>%
   ggplot(aes(name, value/10000)) + geom_bar(stat = "identity") +
@@ -157,7 +157,12 @@ save_plot("data/output/SBM/plots/graph_plot_body_cutoff-spearman_val-0.325_clust
           levels_histogram_plot_body,
           base_height = 5, ncol = 3, nrow = 2, base_asp = 1.3)
 
-x = readClusteringFolder("data/output/SBM/clustering/body_mcmc_cutoff-spearman_val-0.325_hierarchical-SBM.csv",
+xb = readClusteringFolder("data/output/SBM/clustering/body_mcmc_cutoff-spearman_val-0.325_hierarchical-SBM.csv",
                          "body_mcmc_cutoff-spearman_val-0.325_hierarchical-SBM.csv")$nested$spearman
-laply(select(x, matches("B")),
+laply(select(xb, matches("B")),
         function(df) length(unique(df)))
+
+xh = readClusteringFolder("data/output/SBM/clustering/head_mcmc_cutoff-spearman_val-0.4_hierarchical-SBM.csv",
+                         "head_mcmc_cutoff-spearman_val-0.4_hierarchical-SBM.csv")$nested$spearman
+laply(select(xh, matches("B")),
+      function(df) length(unique(df)))
