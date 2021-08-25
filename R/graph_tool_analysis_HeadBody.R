@@ -67,26 +67,31 @@ n_clusters_plot = n_clusters_df %>%
 save_plot(filename = "data/output/SBM/plots/number_of_gene_clusters_nested-vs-non-nested.png",
           n_clusters_plot, base_height = 5, ncol = 2, base_asp = 1.2)
 
-levels_array = laply(head_clusters[['nested']], function(x)
+levels_array_head = laply(head_clusters[['nested']], function(x)
   laply(select(x, matches("B")),
-        function(df) length(unique(df))))
-levels_array_df = data.frame(levels_array, cutOff = as.numeric(names(head_clusters[['nested']])))
-names(levels_array_df) =  gsub("X", "Level.", names(levels_array_df))
-nested_plot_head = levels_array_df %>%
+        function(df) length(unique(df)))[1:6])
+levels_array_head_df = data.frame(levels_array_head, cutOff = as.numeric(names(head_clusters[['nested']])))
+names(levels_array_head_df) =  gsub("X", "Level.", names(levels_array_df))
+nested_plot_head = levels_array_head_df %>%
   pivot_longer(Level.1:Level.5) %>%
   ggplot(aes(cutOff, value, group = name, color = name)) +
   geom_line(size = 1) +
   theme_tufte() + background_grid() + theme(legend.position = "top") +
   ggtitle("Number of clusters - Head - Nested - All levels")
 
+library(gridExtra)
+png("data/output/SBM/plots/number_of_gene_clusters_nested-all_levels_table_head.png",
+    height = 50*nrow(levels_array_head_df), width = 200*ncol(levels_array_head_df))
+grid.table(levels_array_head_df)
+dev.off()
 
 
-levels_array = laply(body_clusters[['nested']], function(x)
+levels_array_body = laply(body_clusters[['nested']], function(x)
   laply(select(x, matches("B")),
-        function(df) length(unique(df))))
-levels_array_df = data.frame(levels_array, cutOff = as.numeric(names(body_clusters[['nested']])))
-names(levels_array_df) =  gsub("X", "Level.", names(levels_array_df))
-nested_plot_body = levels_array_df %>%
+        function(df) length(unique(df)))[1:6])
+levels_array_body_df = data.frame(levels_array_body, cutOff = as.numeric(names(body_clusters[['nested']])))
+names(levels_array_body_df) =  gsub("X", "Level.", names(levels_array_body_df))
+nested_plot_body = levels_array_body_df %>%
   pivot_longer(Level.1:Level.5) %>%
   ggplot(aes(cutOff, value, group = name, color = name)) +
   geom_line(size = 1) +
@@ -97,22 +102,15 @@ nested_plot = plot_grid(nested_plot_head, nested_plot_body, ncol = 2)
 save_plot(filename = "data/output/SBM/plots/number_of_gene_clusters_nested-all_levels.png",
           nested_plot, base_height = 5, ncol = 2, base_asp = 1.2)
 
-library(gridExtra)
-png("data/output/SBM/plots/number_of_gene_clusters_nested-all_levels_table_head.png",
-    height = 50*nrow(levels_array_df), width = 200*ncol(levels_array_df))
-grid.table(levels_array_df)
-dev.off()
+
 png("data/output/SBM/plots/number_of_gene_clusters_nested-all_levels_table_body.png",
-    height = 50*nrow(levels_array_df), width = 200*ncol(levels_array_df))
-grid.table(levels_array_df)
+    height = 50*nrow(levels_array_body_df), width = 200*ncol(levels_array_body_df))
+grid.table(levels_array_body_df)
 dev.off()
 
 
 
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
+
 levels_hist = read.csv("data/output/SBM/clustering/head_cutoff-spearman_val-0.4_hierarchical-SBM_levels_histogram.csv")
 levels_hist[,"X"] = NULL
 levels_hist = levels_hist %>%
