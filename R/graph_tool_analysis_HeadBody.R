@@ -71,7 +71,7 @@ levels_array_head = laply(head_clusters[['nested']], function(x)
   laply(select(x, matches("B")),
         function(df) length(unique(df)))[1:6])
 levels_array_head_df = data.frame(levels_array_head, cutOff = as.numeric(names(head_clusters[['nested']])))
-names(levels_array_head_df) =  gsub("X", "Level.", names(levels_array_df))
+names(levels_array_head_df) =  gsub("X", "Level.", names(levels_array_head_df))
 nested_plot_head = levels_array_head_df %>%
   pivot_longer(Level.1:Level.5) %>%
   ggplot(aes(cutOff, value, group = name, color = name)) +
@@ -152,7 +152,7 @@ levels_hist %>%
   facet_wrap(~levels, ncol = 3, scales = "free") +
   labs(x = "Number of clusters", y = "Posterior density") + theme_cowplot() +
   theme(axis.text.x =  element_text(angle =45) ) +
-  background_grid() + scale_x_continuous(breaks = 1:300) -> 
+  background_grid() + scale_x_continuous(breaks = 1:300) -> levels_histogram_plot_body
 save_plot("data/output/SBM/plots/graph_plot_body_cutoff-spearman_val-0.325_clustered-hierarchical-SBM_Levels_Histogram.png",
           levels_histogram_plot_body,
           base_height = 5, ncol = 3, nrow = 2, base_asp = 1.3)
