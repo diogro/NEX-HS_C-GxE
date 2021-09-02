@@ -11,7 +11,7 @@ if(!require(patchwork)){install.packages("patchwork"); library(patchwork)}
 block_df = read_csv("data/output/SBM/clustering/head_mcmc_cutoff-spearman_val-0.5_hierarchical-SBM.csv")
 
 block_df = block_df %>%
-  arrange(B5, B4, B3, B2, B1, Degree)
+  arrange(B5, B4, B3, B2, B1, desc(Degree))
 
 e_mats = vector("list", 5)
 for (i in seq_along(e_mats)){
@@ -40,6 +40,7 @@ makePlot = function(e_matrix){
 plot_list = lapply(e_mats, makePlot)
 
 all_plots = plot_grid(plotlist = plot_list)
-save_plot("data/output/SBM/plots/E_matrices.png", all_plots, base_height = 5, base_asp = 1.2, ncol = 3, nrow = 2)
+save_plot("data/output/SBM/plots/E_matrices.png", all_plots, 
+          base_height = 5, base_asp = 1.2, ncol = 3, nrow = 2)
 
 
