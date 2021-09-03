@@ -159,3 +159,6 @@ plots/
 *.RData
 graphtool/
 data
+.DS_Store
+
+
