@@ -86,3 +86,6 @@ out0.4 = makeEmatrixPlots("head_mcmc_10000_cutoff-spearman_val-0.4", levels = 6)
 out0.4$plots
 out0.5 = makeEmatrixPlots("head_mcmc_cutoff-spearman_val-0.5")
 out0.5$plots
+
+
+makeEmatrixPlots("body_mcmc_cutoff-spearman_val-0.425")
