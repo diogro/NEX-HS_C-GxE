@@ -3,17 +3,7 @@
 module load conda/4.6.14-1
 conda activate gt
 
-# values=(0.2 0.3 0.4 0.5)
-# for i in "${values[@]}"
-#     do
-#         python fit_sbm.py \
-#             --data VOOMCounts_CPM5_counts4M_covfree_head_ctrl_onlygenesinmainchr_Jul20.21_regularized_correlations_precisions_spearman_correlation_cutoff_0.1.xml.gz \
-#             --correlation correlation \
-#             --tissue head \
-#             --sigma $i \
-#             --trials 10
-#     done
-values=(0.55 0.5 0.45 0.40 0.35 0.3 0.25)
+values=(0.55 0.5 0.45 0.40 0.35 0.3)
 for i in "${values[@]}"
     do
         python fit_sbm.py \
@@ -21,24 +11,6 @@ for i in "${values[@]}"
             --correlation spearman \
             --tissue head \
             --sigma $i \
-            --trials 10 
+            --type all \
+            --wait 1000 
     done
-values=(0.5 0.45 0.40 0.35 0.3 0.25 0.2)
-for i in "${values[@]}"
-    do
-        python fit_sbm.py \
-            --data VOOMCounts_CPM5_counts4M_covfree_body_ctrl_onlygenesinmainchr_Jul20.21_regularized_correlations_precisions_spearman_correlation_cutoff_0.1.xml.gz \
-            --correlation spearman \
-            --tissue body \
-            --sigma $i \
-            --trials 10 
-    done
-# for i in "${values[@]}"
-#     do
-#         python fit_sbm.py \
-#             --data VOOMCounts_CPM5_counts4M_covfree_head_ctrl_onlygenesinmainchr_Jul20.21_regularized_correlations_precisions_spearman_correlation_cutoff_0.1.xml.gz \
-#             --correlation correlation \
-#             --tissue head \
-#             --sigma $i \
-#             --trials 10 
-#     done
