@@ -62,14 +62,15 @@ if __name__ == '__main__':
     for i in range(n_genes):
         for j in range(i):
             pearson_r = sp.stats.pearsonr(X_centered.iloc[:,i], X_centered.iloc[:,j])
-            if(pearson_r[0] > 0.1):
+            spearman_r = sp.stats.spearmanr(X_centered.iloc[:,i], X_centered.iloc[:,j])
+            if(np.abs(spearman_r[0]) > 0.1):
                 g.add_edge(i, j)
                 e = g.edge(i, j)
                 pcor[e] = -gene_expr_OAS_corr.precision_[i, j]/np.sqrt(gene_expr_OAS_corr.precision_[i, i]*gene_expr_OAS_corr.precision_[j, j])
                 corr[e] = gene_expr_OAS_corr.covariance_[i, j]/np.sqrt(gene_expr_OAS_corr.covariance_[i, i]*gene_expr_OAS_corr.covariance_[j, j])
                 pearson[e] = pearson_r[0]
                 pval[e] = pearson_r[1]
-                spearman[e] = sp.stats.spearmanr(X_centered.iloc[:,i], X_centered.iloc[:,j])[0]
+                spearman[e] = spearman_r[0]
 
     g.edge_properties["correlation"] = corr
     g.edge_properties["precision"] = pcor
