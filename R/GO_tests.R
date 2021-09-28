@@ -1,8 +1,10 @@
 # BiocManager::install("org.Dm.eg.db")
+# BiocManager::install("hfang-bristol/XGR", dependencies=T)
 
-BiocManager::install("hfang-bristol/XGR", dependencies=T)
 library(XGR)
-
+library(plyr)
+library(cowplot)
+library(ggrepel)
 library("AnnotationDbi")
 library("org.Dm.eg.db")
 # flyGO <- xRDataLoader(RData.customised = 'org.Dm.egGOBP',
@@ -13,13 +15,25 @@ flyGO = readRDS("org.Dm.egGOBP.2021-09-27")
 #BiocManager::install("clusterProfiler")
 library(clusterProfiler)
 
-block_path = "data/output/SBM/clustering/head_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks"
+
+getLevel = function(x, n_levels = 4){
+  x = gsub(".csv", "", x)
+  x = gsub("/", "", x)
+  n_levels - length(strsplit(x, "-")[[1]]) + 1
+}
+block_path = "data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks"
 level = 1
 block  = 11
-getGeneList = function(block_number, level, folder_path){
-  file_path = file.path(folder_path, paste0("Level_", level))
-  file = dir(file_path, pattern = paste0("^", block_number), full.names = T)
+getGeneList = function(block_number, level, folder_path, file_name = NULL){
+  if(is.null(file_name)){
+    file_path = file.path(folder_path, paste0("Level_", level))
+    file = dir(file_path, pattern = paste0("^", block_number), full.names = T)
+  } else{
+    level = getLevel(file_name)
+    file = file.path(folder_path, paste0("Level_", level), file_name)
+  }
   gene_list = read.csv(file, header = FALSE)[,1]
+
   background = read.csv(file.path(folder_path, "background.csv"), header = FALSE)[,1]
   fb = list(genes = gene_list, background = background)
   en = list(genes = bitr(fb$genes, fromType="FLYBASE",
@@ -28,24 +42,139 @@ getGeneList = function(block_number, level, folder_path){
                               toType="ENTREZID", OrgDb="org.Dm.eg.db")$ENTREZID)
   list(fb = fb, en = en)
 }
+getEnrichment = function(block_number = NULL, level = NULL,
+                         folder_path, file_name = NULL, type = c("clusterProfiler", "XGR")){
+  type = match.arg(type)
+  x = getGeneList(block_number, level, folder_path, file_name)
+  if(type == "clusterProfiler")
+  enGo = enrichGO(gene          = x$en$genes,
+                  universe      = x$en$background,
+                  OrgDb         = org.Dm.eg.db,
+                  ont           = "BP",
+                  pAdjustMethod = "BH",
+                  pvalueCutoff  = 0.05,
+                  qvalueCutoff  = 0.05,
+                  readable      = TRUE)
+  else
+    enGo = xEnricherGenes(data = x$en$genes,
+                         ontology.customised = flyGO,
+                         ontology = 'NA',
+                         background = x$en$background,
+                         verbose = TRUE,
+                         check.symbol.identity = TRUE,
+                         ontology.algorithm = "none")
+  enGo
+}
+
+block_summary = read.csv(file.path(block_path, "block_summary.csv"))
+block_summary$Name = block_summary$File %>% {gsub(".csv", "", .)} %>% {gsub("/", "", .)}
+block_summary$Parent = block_summary$Name %>%
+  llply(strsplit, split="-") %>% sapply(`[[`, 1) %>% sapply(`[`, 2)
+
+enGo_XGR = llply(block_summary$File,
+              function(file)
+                getEnrichment(file_name = file,
+                              folder_path = block_path,
+                              type = "XGR"), .progress = "text")
+names(enGo_XGR) = block_summary$Name
+enGo_CP = llply(block_summary$File,
+                  function(file)
+                    getEnrichment(file_name = file,
+                                  folder_path = block_path,
+                                  type = "clusterProfiler"), .progress = "text")
+names(enGo_CP) = block_summary$Name
+
+enGo_CP_simple = lapply(enGo_CP, clusterProfiler::simplify, cutoff=0.7, by="p.adjust", select_fun=min)
+
+x = enGo_XGR[[2]]
+x
+dplyr::select(enGo_CP[[2]]@result, -geneID) %>% head()
+
+block_summary$p.adjust = laply(enGo_CP, function(x) select(x@result, p.adjust)[1,])
+block_summary$n_enrich = laply(enGo_CP,
+                               function(x) select(x@result, p.adjust) %>%
+                                 filter(p.adjust < 0.05) %>% nrow)
+block_summary$n_enrich_simple = laply(enGo_CP_simple,
+                               function(x) select(x@result, p.adjust) %>%
+                                 filter(p.adjust < 0.05) %>% nrow)
+
+table(block_summary$n_enrich[block_summary$Nested_Level==1]!=0)
+
+ggplot(filter(block_summary, Nested_Level == 1), aes(Assortatitvity, -log2(p.adjust), color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
+ggplot(filter(block_summary, Nested_Level == 1), aes(N_genes, -log2(p.adjust), color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
+ggplot(filter(block_summary, Nested_Level == 1), aes(Assortatitvity, n_enrich, color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
+ggplot(filter(block_summary, Nested_Level == 1), aes(N_genes, n_enrich, color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
+ggplot(filter(block_summary, Nested_Level == 1), aes(Assortatitvity, n_enrich_simple, color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
+ggplot(filter(block_summary, Nested_Level == 1), aes(N_genes, n_enrich_simple, color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
+
+ggplot(filter(block_summary, Nested_Level == 2), aes(Assortatitvity, -log2(p.adjust), color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
+ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, -log2(p.adjust), color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
+ggplot(filter(block_summary, Nested_Level == 2), aes(Assortatitvity, n_enrich, color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))+ geom_smooth(method = lm, color = "black")
+ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, n_enrich, color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
+ggplot(filter(block_summary, Nested_Level == 2), aes(Assortatitvity, n_enrich_simple, color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
+ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, n_enrich_simple, color = Parent)) +
+  geom_point() + geom_label_repel(aes(label = Block))
 
 
-x = getGeneList(6, 2, block_path)
-out = xEnricherGenes(data = x$en$genes,
-               ontology.customised = flyGO,
-               ontology = 'NA',
-               background = x$en$background,
-               verbose = TRUE,
-               check.symbol.identity = TRUE,
-               ontology.algorithm = "none")
-xEnrichViewer(out)
+go_1 = enGo_XGR[["1"]]
+go_0 = enGo_XGR[["0"]]
+xEnrichViewer(go_0, top_num = 10, sortBy = "adjp", details=F)
+l<- list(go_1, go_0); names(l) <- c("Block 1", "Block 0")
 
-enGo = enrichGO(gene          = x$en$genes,
-                universe      = x$en$background,
-                OrgDb         = org.Dm.eg.db,
-                ont           = "BP",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-                readable      = TRUE)
-head(enGo)
+parent = "4-0"
+getChild = function(parent, b_df = block_summary){
+  if(!parent %in% b_df$Name) stop("Parent block not found.")
+childs = b_df %>%
+  filter(Nested_Level == getLevel(parent)-1, Parent == strsplit(parent, "-")[[1]][1]) %>%
+  as.data.frame %>% `[[`("Name")
+  c(parent, childs)
+}
+
+
+goplot_list = llply(block_summary$Name[block_summary$Nested_Level==2], function(x) {
+  l = enGo_XGR[getChild(x)]
+  l = l[!sapply(l, is.null)]
+  if(length(l) > 2){
+    print(x)
+    goplot <- xEnrichCompare(l, displayBy="fc", FDR.cutoff = 0.05, wrap.width = 45) +
+      scale_fill_brewer(palette='Set2') +
+      ggtitle('GO Enrichment Biological Process (FDR < 0.05)')
+  } else
+    goplot = NULL
+  goplot
+})
+save_plot("go_head_level_4-0-0_XGR.png", goplot_list[[5]], base_height = 7, base_asp = 0.25, ncol=5)
+
+l = enGo_CP_simple[block_summary$Name[block_summary$Nested_Level==3]]
+
+llply(block_summary$Name[block_summary$Nested_Level==2], function(x) {
+  l = enGo_CP[getChild(x)]
+  l = l[!sapply(l, is.null)]
+  if(length(l) > 2){
+    print(x)
+    df = ldply(l, function(x) select(x@result, -geneID), .id = "Block") %>%
+      filter(p.adjust < 0.05)
+    goplot <- df %>%
+      ggplot(aes(Description, -log2(p.adjust))) +
+      geom_bar(stat="identity")  + coord_flip()
+    if(length(unique(df$Block))>1){
+      goplot <- goplot + facet_wrap(~Block, nrow = 1)
+    } else
+      goplot <- ifelse(is.na(df$Block[1]), NULL, goplot + ggtitle(df$Block[1]))
+  } else
+    goplot = NULL
+  goplot
+})
+
+save_plot("go_head_level_4-0-0_gueto.png", goplot, base_height = 9, base_asp = 0.25, ncol=5)
