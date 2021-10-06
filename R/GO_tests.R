@@ -104,7 +104,7 @@ CP_plot = function(x){
   l = l[!sapply(l, is.null)]
   if(length(l) > 2){
     print(x)
-    df = ldply(l, function(x) select(x@result, -geneID), .id = "Block") %>%
+    df = ldply(l, function(x) dplyr::select(x@result, -geneID), .id = "Block") %>%
       filter(p.adjust < 0.05)
     goplot <- df %>%
       ggplot(aes(Description, -log2(p.adjust))) +
@@ -133,13 +133,12 @@ CP_print = function(x, fdr = 0.05, simple = FALSE, recursive=TRUE){
       dplyr::select(-geneID) %>%
       filter(p.adjust < fdr) %>%
       mutate(Block = x) %>%
-      select(Block, everything())
+      dplyr::select(Block, everything())
   return(out)
 }
 
 block_path = "data/output/SBM/clustering/head_weights-spearman_fdr-1e-06_mcmc_mode_hierarchical-SBM_gene-blocks"
-level = 1
-block  = 11
+
 block_summary = read.csv(file.path(block_path, "block_summary.csv"))
 block_summary$Name = block_summary$File %>% {gsub(".csv", "", .)} %>% {gsub("/", "", .)}
 block_summary$Parent = block_summary$Name %>%
@@ -170,15 +169,21 @@ x = enGo_XGR[[2]]
 x
 dplyr::select(enGo_CP[[2]]@result, -geneID) %>% head()
 
-block_summary$p.adjust = laply(enGo_CP, function(x) select(x@result, p.adjust)[1,])
+block_summary$p.adjust = laply(enGo_CP, function(x) dplyr::select(x@result, p.adjust)[1,])
 block_summary$n_enrich = laply(enGo_CP,
-                               function(x) select(x@result, p.adjust) %>%
+                               function(x) dplyr::select(x@result, p.adjust) %>%
                                  filter(p.adjust < 0.05) %>% nrow)
 block_summary$n_enrich_simple = laply(enGo_CP_simple,
-                               function(x) select(x@result, p.adjust) %>%
+                               function(x) dplyr::select(x@result, p.adjust) %>%
                                  filter(p.adjust < 0.05) %>% nrow)
 
 table_en = table(block_summary$n_enrich[block_summary$Nested_Level==1]!=0)
+table_en/sum(table_en)
+
+table_en = table(block_summary$n_enrich[block_summary$Nested_Level==2]!=0)
+table_en/sum(table_en)
+
+table_en = table(block_summary$n_enrich[block_summary$Nested_Level==3]!=0)
 table_en/sum(table_en)
 
 ggplot(filter(block_summary, Nested_Level == 1), aes(Assortatitvity, -log2(p.adjust), color = Parent)) +
@@ -208,7 +213,7 @@ ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, n_enrich_simple, c
   geom_point() + geom_label_repel(aes(label = Block))
 
 goplot_list = llply(block_summary$Name[block_summary$Nested_Level==2], XGR_plot)
-save_plot("go_head_level_11-1-0-super_translation.png", XGR_plot("11-1-0"), base_height = 7, base_asp = 0.25, ncol=4)
+#save_plot("go_head_level_11-1-0-super_translation.png", XGR_plot("11-1-0"), base_height = 7, base_asp = 0.25, ncol=4)
 
 l = enGo_CP_simple[block_summary$Name[block_summary$Nested_Level==3]]
 
