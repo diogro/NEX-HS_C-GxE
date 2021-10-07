@@ -28,7 +28,7 @@ getLevel = function(x, n_levels = 4){
   x = gsub("/", "", x)
   n_levels - length(strsplit(x, "-")[[1]]) + 1
 }
-getChild = function(parent, b_df = block_summary){
+getChild = function(parent, b_df){
   if(!parent %in% b_df$Name) stop("Parent block not found.")
   childs = b_df %>%
     filter(Nested_Level == getLevel(parent)-1, Parent == strsplit(parent, "-")[[1]][1]) %>%
@@ -87,8 +87,8 @@ getEnrichment = function(block_number = NULL, level = NULL,
                          ontology.algorithm = "none")
   enGo
 }
-XGR_plot = function(x, enGo = enGo_XGR){
-  l = enGo[getChild(x)]
+XGR_plot = function(x, enGo, summary){
+  l = enGo[getChild(x, summary)]
   l = l[!sapply(l, is.null)]
   if(length(l) > 2){
     print(x)
@@ -99,8 +99,8 @@ XGR_plot = function(x, enGo = enGo_XGR){
     goplot = NULL
   return(goplot)
 }
-CP_plot = function(x){
-  l = enGo_CP_simple[getChild(x)]
+CP_plot = function(x, enGo_CP_simple, summary){
+  l = enGo_CP_simple[getChild(x, summary)]
   l = l[!sapply(l, is.null)]
   if(length(l) > 2){
     print(x)
@@ -117,14 +117,9 @@ CP_plot = function(x){
     goplot = NULL
   return(goplot)
 }
-CP_print = function(x, fdr = 0.05, simple = FALSE, recursive=TRUE){
-  if(simple){
-    enGo = enGo_CP_simple
-  } else{
-    enGo = enGo_CP
-  }
+CP_print = function(x, enGo, summary, fdr = 0.05, recursive=TRUE){
   if(recursive){
-    out = ldply(enGo[getChild(x)],
+    out = ldply(enGo[getChild(x, summary)],
           function(d) d@result %>%
             dplyr::select(-geneID) %>%
             filter(p.adjust < fdr), .id =  "Block")
@@ -137,53 +132,60 @@ CP_print = function(x, fdr = 0.05, simple = FALSE, recursive=TRUE){
   return(out)
 }
 
-block_path = "data/output/SBM/clustering/head_weights-spearman_fdr-1e-06_mcmc_mode_hierarchical-SBM_gene-blocks"
+makeEnrichment = function(block_path){
+  block_summary = read.csv(file.path(block_path, "block_summary.csv"))
+  block_summary$Name = block_summary$File %>% {gsub(".csv", "", .)} %>% {gsub("/", "", .)}
+  block_summary$Parent = block_summary$Name %>%
+    llply(strsplit, split="-") %>% sapply(`[[`, 1) %>% sapply(`[`, 2)
 
-block_summary = read.csv(file.path(block_path, "block_summary.csv"))
-block_summary$Name = block_summary$File %>% {gsub(".csv", "", .)} %>% {gsub("/", "", .)}
-block_summary$Parent = block_summary$Name %>%
-  llply(strsplit, split="-") %>% sapply(`[[`, 1) %>% sapply(`[`, 2)
-
-enGo_XGR = llply(block_summary$File,
-              function(file)
-                getEnrichment(file_name = file,
-                              folder_path = block_path,
-                              type = "XGR"))
-names(enGo_XGR) = block_summary$Name
-enGo_XGR_CC = llply(block_summary$File,
-                 function(file)
-                   getEnrichment(file_name = file,
-                                 folder_path = block_path,
-                                 type = "XGR", ont = "CC"))
-names(enGo_XGR_CC) = block_summary$Name
-enGo_CP = llply(block_summary$File,
+  enGo_XGR = llply(block_summary$File,
+                   function(file)
+                     getEnrichment(file_name = file,
+                                   folder_path = block_path,
+                                   type = "XGR"))
+  names(enGo_XGR) = block_summary$Name
+  enGo_XGR_CC = llply(block_summary$File,
+                      function(file)
+                        getEnrichment(file_name = file,
+                                      folder_path = block_path,
+                                      type = "XGR", ont = "CC"))
+  names(enGo_XGR_CC) = block_summary$Name
+  enGo_CP = llply(block_summary$File,
                   function(file)
                     getEnrichment(file_name = file,
                                   folder_path = block_path,
                                   type = "clusterProfiler"))
-names(enGo_CP) = block_summary$Name
+  names(enGo_CP) = block_summary$Name
 
-enGo_CP_simple = lapply(enGo_CP, clusterProfiler::simplify, cutoff=0.7, by="p.adjust", select_fun=min)
+  enGo_CP_simple = lapply(enGo_CP, clusterProfiler::simplify, cutoff=0.7, by="p.adjust", select_fun=min)
 
-x = enGo_XGR[[2]]
-x
-dplyr::select(enGo_CP[[2]]@result, -geneID) %>% head()
+  block_summary$p.adjust = laply(enGo_CP, function(x) dplyr::select(x@result, p.adjust)[1,])
+  block_summary$n_enrich = laply(enGo_CP,
+                                 function(x) dplyr::select(x@result, p.adjust) %>%
+                                   filter(p.adjust < 0.05) %>% nrow)
+  block_summary$n_enrich_simple = laply(enGo_CP_simple,
+                                        function(x) dplyr::select(x@result, p.adjust) %>%
+                                          filter(p.adjust < 0.05) %>% nrow)
+  return(list(summary = block_summary,
+              CP = enGo_CP,
+              CP_simple = enGo_CP_simple,
+              XGR = enGo_XGR,
+              XGR_CC = enGo_XGR_CC))
+}
 
-block_summary$p.adjust = laply(enGo_CP, function(x) dplyr::select(x@result, p.adjust)[1,])
-block_summary$n_enrich = laply(enGo_CP,
-                               function(x) dplyr::select(x@result, p.adjust) %>%
-                                 filter(p.adjust < 0.05) %>% nrow)
-block_summary$n_enrich_simple = laply(enGo_CP_simple,
-                               function(x) dplyr::select(x@result, p.adjust) %>%
-                                 filter(p.adjust < 0.05) %>% nrow)
+en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-06_mcmc_mode_hierarchical-SBM_gene-blocks")
+en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-06_mcmc_mode_hierarchical-SBM_gene-blocks")
 
-table_en = table(block_summary$n_enrich[block_summary$Nested_Level==1]!=0)
+table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==1]!=0)
 table_en/sum(table_en)
 
-table_en = table(block_summary$n_enrich[block_summary$Nested_Level==2]!=0)
+table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==2]!=0)
 table_en/sum(table_en)
 
-table_en = table(block_summary$n_enrich[block_summary$Nested_Level==3]!=0)
+table_en = table(en_body$summary$n_enrich[en_body$summary$Nested_Level==1]!=0)
+table_en/sum(table_en)
+
+table_en = table(en_body$summary$n_enrich[en_body$summary$Nested_Level==2]!=0)
 table_en/sum(table_en)
 
 ggplot(filter(block_summary, Nested_Level == 1), aes(Assortatitvity, -log2(p.adjust), color = Parent)) +
@@ -215,23 +217,17 @@ ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, n_enrich_simple, c
 goplot_list = llply(block_summary$Name[block_summary$Nested_Level==2], XGR_plot)
 #save_plot("go_head_level_11-1-0-super_translation.png", XGR_plot("11-1-0"), base_height = 7, base_asp = 0.25, ncol=4)
 
-l = enGo_CP_simple[block_summary$Name[block_summary$Nested_Level==3]]
-
-llply(block_summary$Name[block_summary$Nested_Level==2], CP_plot)
-
-save_plot("go_head_level_4-0-0_gueto.png", goplot, base_height = 9, base_asp = 0.25, ncol=5)
+llply(en_body$summary$Name[en_body$summary$Nested_Level==2], CP_plot, en_body$CP, en_body$summary)
 
 Level = 3
-for(x in block_summary$Name[block_summary$Nested_Level==Level]){
-  df = CP_print(x)
+for(x in en_head$summary$Name[en_head$summary$Nested_Level==Level]){
+  df = CP_print(x, enGo = en_head$CP, en_head$summary)
   print(df)
 }
 
-x = getEnrichment(37, 1, folder_path = block_path, ont = "CC", type = "XGR")
-x@result %>% dplyr::select(-geneID) %>% filter(Count > 1)
 
-XGR_plot("2-3-1", enGo_XGR)
+XGR_plot("2-3-1", en_head$XGR, en_head$summary)
 save_plot("go_head_level_2-3-1-vision-neuro-signaling.png", XGR_plot("2-3-1"), base_height = 7, base_asp = 0.25, ncol=5)
 
-XGR_plot("2-3-1", enGo_XGR_CC)
+XGR_plot("2-3-1", en_head$XGR_CC, en_head$summary)
 save_plot("go_head_level_2-3-1-vision-neuro-signaling-CC.png", XGR_plot("2-3-1", enGo_XGR_CC), base_height = 7, base_asp = 0.25, ncol=5)
