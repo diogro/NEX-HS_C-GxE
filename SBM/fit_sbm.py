@@ -10,6 +10,8 @@ import sys
 from functools import partial
 import shutil as sh
 
+import dill
+
 from graph_tool.all import *
 import pandas as pd
 import numpy as np
@@ -17,21 +19,7 @@ import scipy as sp
 from sklearn.covariance import LedoitWolf, OAS
 import statsmodels.api as sm
 
-def filterByEdge(g, corr, cutOff, keepOnlyMain):
-    # Filtering edges
-    corr = g.edge_properties[corr]
-    sign = g.new_ep("bool", True)
-    sign.a = np.array(corr.a > cutOff)
-
-    tv = GraphView(g, efilt=sign)
-
-    # Keeping largest component
-    if keepOnlyMain:
-        comp, hist = label_components(tv)
-        main_component = tv.new_vp("bool", (comp.a == np.where(hist == max(hist))[0][0]))
-        tv.vertex_properties["main_component"] = main_component
-        tv.set_vertex_filter(main_component)
-    return tv
+from multipy.fdr import lsu
 
 def create_Block_df(g, corr, state):
     genes = g.vertex_properties["genes"]
@@ -39,14 +27,14 @@ def create_Block_df(g, corr, state):
     for v in g.vertex_index:
         line = [genes[v]]
         line.append(g.get_total_degrees([v])[0])
-        line.append(np.mean(g.get_all_edges(v, [corr] )[:,2]))
+        line.append(np.mean(np.abs(g.get_all_edges(v, [corr] )[:,2])))
         line.append(state.get_blocks()[v])
         block_df.loc[v] = line
     return block_df
 
 def get_group(x, state):
     levels = state.get_levels()
-    n_levels = 5#len(levels)
+    n_levels = 7#len(levels)
     r = np.zeros(n_levels)
     r[0] = levels[0].get_blocks()[x]
     for i in range(1, n_levels):
@@ -55,90 +43,105 @@ def get_group(x, state):
     return r
 def create_nestedBlock_df(g, corr, state):
     genes = g.vertex_properties["genes"]
-    nested_block_df = pd.DataFrame(columns=('Gene', "Degree", "E_corr", 'B1', "B2", "B3", "B4", "B5"))
+    nested_block_df = pd.DataFrame(columns=('Gene', "Degree", "E_corr", 'B1', "B2", "B3", "B4", "B5", "B6", "B7"))
     for v in g.vertex_index:
         line = [genes[v]]
         line.append(g.get_total_degrees([v])[0])
-        line.append(np.mean(g.get_all_edges(v, [corr] )[:,2]))
+        line.append(np.mean(np.abs(g.get_all_edges(v, [corr] )[:,2])))
         [line.append(i) for i in get_group(v, state)]
         nested_block_df.loc[v] = line
     return nested_block_df
 
 def run_non_nested_SBM(g, corr, args):
-    n_trials = args.trials
-    state_nn_min_list = []
-    print("Running SBM " + str(n_trials) + " times")
-    for i in range(n_trials):
-        print(i)
-        #state_min = minimize_blockmodel_dl(gf, state_args=dict(recs=[corr],
-        #                                                       rec_types=["real-normal"]))
-        state_min = minimize_blockmodel_dl(g)
-        state_nn_min_list.append(state_min)
+    print("Running non-nested model.")
+    state_min_nn = minimize_blockmodel_dl(g)
+    mcmc_equilibrate(state_min_nn, wait=args.wait, mcmc_args=dict(niter=10))
 
-    print("Improve solution with merge-split")
-    ret_nn = []
-    state_nn_mcmc_list = []
-    for j in range(n_trials):
-        print(j)
-        for i in range(200):
-            state = state_nn_min_list[j].copy(sampling = True)
-            x = state.multiflip_mcmc_sweep(niter=20, beta=np.inf)
-            state_nn_mcmc_list.append(state)
-            ret_nn.append(x)
-
-    description_lenghts = np.zeros(n_trials)
-    for j in range(n_trials):
-        description_lenghts[j] = state_nn_mcmc_list[j].entropy()
-    min_index = np.argmin(description_lenghts)
-    state_min_nn = state_nn_mcmc_list[min_index]
-
-    plot_file = "../data/output/SBM/plots/graph_plot_" + args.tissue + "_cutoff-" + args.correlation + "_val-" + str(args.sigma) + "_clustered-non-hierarchical-SBM.png"
+    plot_file = out_folder + "plots/graph_plot_" + out_label + "_clustered-non-hierarchical-SBM.png"
     state_min_nn.draw(output = plot_file)
 
     block_df = create_Block_df(g, corr, state_min_nn)
-    output_file = "../data/output/SBM/clustering/" + args.tissue + "_cutoff-" + args.correlation + "_val-" + str(args.sigma) + "_non-hierarchical-SBM.csv"
+    output_file = out_folder + "clustering/" + out_label + "_non-hierarchical-SBM.csv"
     block_df.to_csv(output_file)
 
-def run_nested_SBM(g, corr, args):
-    n_trials = args.trials
-    print("Running Hierarchical SBM " + str(n_trials) + " times")
-    state_min_list = []
-    for i in range(n_trials):
-        print(i)
-        #state_min = minimize_nested_blockmodel_dl(gf, state_args=dict(recs=[corr],
-        #                                                              rec_types=["real-normal"]))
-        state_min = minimize_nested_blockmodel_dl(g)
-        state_min_list.append(state_min)
+def run_nested_SBM(g, corr, args, blocks=None):
 
-    # improve solution with merge-split
-    # state_min = state_min.copy(bs=state_min.get_bs() + [np.zeros(1)] * 4, sampling=True)
+    if args.layer is True:
+        state_min = minimize_nested_blockmodel_dl(g, init_bs=blocks, 
+                                                  state_args=dict(base_type=LayeredBlockState,
+                                                                  ec=g.ep.layer,
+                                                                  layers=True,
+                                                                  recs=[g.ep.z_s],
+                                                                  rec_types=["real-normal"]))
+    else:
+        state_min = minimize_nested_blockmodel_dl(g, init_bs=blocks, 
+                                                  state_args=dict(recs=[g.ep.z_s],
+                                                                  rec_types=["real-normal"]))
 
-    ret = []
-    state_mcmc_list = []
-    print("Improve solution with merge-split")
-    for j in range(n_trials):
-        print(j)
-        for i in range(200):
-            state = state_min_list[j].copy(sampling = True)
-            x = state.multiflip_mcmc_sweep(niter=20, beta=np.inf)
-            state_mcmc_list.append(state)
-            ret.append(x)
 
-    description_lenghts = np.zeros(n_trials)
-    for j in range(n_trials):
-        description_lenghts[j] = state_mcmc_list[j].entropy()
-    min_index = np.argmin(description_lenghts)
-    state_min = state_mcmc_list[min_index]
+    initial_entropy = state_min.entropy()
+    print("Running nested model. Initial entropy: " + str(initial_entropy))
+    mcmc_equilibrate(state_min, wait=args.wait, mcmc_args=dict(niter=10))
+    print("Final entropy: " + str(state_min.entropy()))
 
-    levels = state_min.get_levels()
+    if state_min.entropy() < initial_entropy:
+        plot_file = out_folder + "plots/graph_plot_" + out_label + "_clustered-hierarchical-SBM.png"
+        state_min.draw(output = plot_file)
 
-    plot_file = "../data/output/SBM/plots/graph_plot_" + args.tissue + "_cutoff-" + args.correlation + "_val-" + str(args.sigma) + "_clustered-hierarchical-SBM.png"
-    state_min.draw(output = plot_file)
+        nested_block_df = create_nestedBlock_df(g, corr, state_min)
+        output_file = out_folder + "clustering/" + out_label + "_hierarchical-SBM.csv"
+        nested_block_df.to_csv(output_file)
 
-    nested_block_df = create_nestedBlock_df(g, corr, state_min)
-    output_file = "../data/output/SBM/clustering/" + args.tissue + "_cutoff-" + args.correlation + "_val-" + str(args.sigma) + "_hierarchical-SBM.csv"
-    nested_block_df.to_csv(output_file)
+        block_state = [g, state_min.get_bs()]
+        output_file = out_folder + "clustering/" + out_label + "_hierarchical-SBM.dill"
+        with open(output_file, 'wb') as fh:
+            dill.dump(block_state, fh, recurse=True)
 
+    if args.mcmc == True:
+        bs = []
+        h = [np.zeros(g.num_vertices() + 1) for s in state_min.get_levels()]
+
+        def collect_partitions(s):
+            bs.append(s.get_bs())
+            for l, sl in enumerate(s.get_levels()):
+                B = sl.get_nonempty_B()
+                h[l][B] += 1
+
+        print("Starting MCMC.")
+        # Now we collect the marginals for exactly 100,000 sweeps
+        mcmc_equilibrate(state_min, force_niter=args.iter, mcmc_args=dict(niter=10),
+                         callback=collect_partitions)
+
+        pmode = PartitionModeState(bs, nested=True, converge=True)
+        pv = pmode.get_marginal(g)
+
+        # Get consensus estimate
+        bs_max = pmode.get_max_nested()
+
+        state = state_min.copy(bs=bs_max)
+
+        print("Description lenght improvement in mcmc: " + str(state_min.entropy() - state.entropy()))
+
+        plot_file = out_folder + "plots/graph_plot_" + out_label + "_mcmc_mode_clustered-hierarchical-SBM.png"
+        state.draw(output = plot_file)
+
+        nested_block_df = create_nestedBlock_df(g, corr, state)
+        output_file = out_folder + "clustering/" + out_label + "_mcmc_mode_hierarchical-SBM.csv"
+        nested_block_df.to_csv(output_file)
+
+        for i in range(7):
+            B = state.get_levels()[i].get_nonempty_B()
+            e_mat = state.get_levels()[i].get_matrix().todense()
+            output_file = out_folder + "clustering/" + out_label + "_mcmc_mode_hierarchical-SBM_e_matrix_level" + str(i) + ".csv"
+            pd.DataFrame(e_mat).to_csv(output_file)
+
+        output_file = out_folder + "clustering/" + out_label + "_mcmc_mode_hierarchical-SBM_levels_histogram.csv"
+        pd.DataFrame(h).to_csv(output_file)
+
+        block_state = [g, state.get_bs()]
+        output_file = out_folder + "clustering/" + out_label + "_mcmc_mode_hierarchical-SBM.dill"
+        with open(output_file, 'wb') as fh:
+            dill.dump(block_state, fh, recurse=True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -146,29 +149,51 @@ if __name__ == '__main__':
             help='Show more information on the screen.')
     parser.add_argument('--correlation',
             choices=('pearson', 'precision', 'spearman', 'correlation'),
-            default='pearson',
+            default='spearman',
             help=("Compute correlation coefficients using either "
-                "'pearson' (standard correlation coefficient), "
-                "'correlation' (shrinkage correlation estimate), "
-                "'precision' (shrinkage inverse correlation estimate), or "
-                "'spearman' (Spearman rank correlation)."))
-    parser.add_argument('--trials', type=int, required=True,
-            help=('Number of times to run SBM from which to chose the lowest description lenght.'))
-    parser.add_argument('--sigma', type=float, required=True,
-            help=('The correlation cut-off to use.'))
-    parser.add_argument('--data', required=True,
-            help=('Path to the full graph generated by graphtool.'))
+                  "'pearson' (standard correlation coefficient), "
+                  "'correlation' (shrinkage correlation estimate), "
+                  "'precision' (shrinkage inverse correlation estimate), or "
+                  "'spearman' (Spearman rank correlation)."))
+    parser.add_argument('--wait', default = 100, type=int,
+            help=('Number of runs without improvement of block partition in equilibration.'))
+    parser.add_argument('--graph',
+            help=('Path to the full input graph generated by graph-tool.'))
+    parser.add_argument('--block', dest='block', action='store_true')
+    parser.add_argument('--no-block', dest='block', action='store_false')
+    parser.set_defaults(block=False)
+    parser.add_argument('--output', required=True,
+            help=('Output label.'))
     parser.add_argument('--tissue', required=True,
             choices=('head', 'body'),
             help='Tissue being analysed.')
-        
+    parser.add_argument('--type',
+            choices=('all', 'nested', 'non-nested', 'none'), default="nested",
+            help='Type of SBM model.  Default nested.')
+    parser.add_argument('--layer', dest='layer', action='store_true')
+    parser.add_argument('--no-layer', dest='layer', action='store_false')
+    parser.set_defaults(layer=False)
+    parser.add_argument('--mcmc', dest='mcmc', action='store_true')
+    parser.add_argument('--no-mcmc', dest='mcmc', action='store_false')
+    parser.set_defaults(mcmc=False)
+    parser.add_argument('--mcmc-iter', dest='iter', default = 10000, type=int,
+    help=('Number of MCMC iterations.'))
     args = parser.parse_args()
 
-    g = load_graph(args.data)
+    if args.block is None or args.block is False:
+        g = load_graph(args.graph)
+        bs = None
+    else:
+        with open (args.graph, "rb") as fh:
+            emp = dill.load(fh)
+        g = emp[0]
+        bs = emp[1]
 
-    # Prune by treashold correlation
-    tv = filterByEdge(g, args.correlation, args.sigma, True)
-    g = Graph(tv, prune = True)
+    corr = g.edge_properties[args.correlation]
+    g.ep.positive = g.new_edge_property("int", (np.sign(corr.a) + 1)/2)
+    g.ep.layer = g.new_edge_property("int16_t", np.sign(corr.a).astype(np.int16))
+    g.ep.layer.a = np.sign(corr.a).astype(np.int16)
+    g.ep.z_s = g.new_edge_property("double", (2*np.arctanh(corr.a)))
 
     N = len(g.get_vertices())
     print(N)
@@ -176,12 +201,26 @@ if __name__ == '__main__':
     E = len(g.get_edges())
     print(E/Et)
 
-    plot_file = "../data/output/SBM/plots/graph_plot_" + args.tissue + "_cutoff-" + args.correlation + "_val-" + str(args.sigma) + "_non-clustered.png"
-    graph_draw(g, vertex_text=g.vertex_index, edge_pen_width=g.edge_properties[args.correlation], output=plot_file)
+    out_folder = "../data/output/SBM/"
+    out_label = args.tissue + "_weights-" + args.correlation + "_" + args.output
+    if args.layer is True:
+        out_label = out_label + "_layered"
+
+    print("Out file label: " + out_label)
+
+    plot_file = out_folder + "plots/" + out_label + "_non-clustered.png"
+    corr.a = np.abs(corr.a)
+    if args.type != 'none':
+        graph_draw(g, vertex_text=g.vertex_index, edge_pen_width=corr, output=plot_file)
 
     corr = g.edge_properties[args.correlation]
 
-    run_non_nested_SBM(g, corr, args)
-    run_nested_SBM(g, corr, args)
-
-    
+    if args.type == "all":
+        run_non_nested_SBM(g, corr, args)
+        run_nested_SBM(g, corr, args, blocks = bs)
+    if args.type == 'nested':
+        run_nested_SBM(g, corr, args, blocks = bs)
+    if args.type == 'non-nested':
+        run_non_nested_SBM(g, corr, args)
+    if args.type == 'none':
+        print("Test run, did nothing.")

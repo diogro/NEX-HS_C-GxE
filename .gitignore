@@ -159,6 +159,10 @@ plots/
 *.RData
 graphtool/
 data
+
+.vscode
+*/.vscode/*
+
 .DS_Store
 
 
