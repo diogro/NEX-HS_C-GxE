@@ -81,16 +81,8 @@ makeEmatrixPlots = function(header,
             base_height = 10, base_asp = 1.2, ncol = 3, nrow = 2)
   return(list(df = block_df, E = e_mats, plots = all_plots))
 }
-<<<<<<< HEAD
-out0.4 = makeEmatrixPlots("head_mcmc_10000_cutoff-spearman_val-0.4", levels = 6)
-out0.4$plots
-out0.5 = makeEmatrixPlots("head_mcmc_cutoff-spearman_val-0.5")
-out0.5$plots
-makeEmatrixPlots("body_mcmc_cutoff-spearman_val-0.425", levels = 5)
-=======
-out_fdr_0.5_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-05_mcmc_mode", levels = 4)
-out_fdr_0.5_head$plots
-out_fdr_0.5_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-05_mcmc_mode", levels = 4)
-out_fdr_0.5_body$plots
 
->>>>>>> 6862429380851c68dd09554c7a11363aa639dce1
+out_fdr_0.5_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-06_mcmc_mode", levels = 4)
+out_fdr_0.5_head$plots
+out_fdr_0.5_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-06_mcmc_mode", levels = 4)
+out_fdr_0.5_body$plots
