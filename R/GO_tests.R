@@ -41,7 +41,9 @@ getGeneList = function(block_number, level, folder_path, file_name = NULL){
     file_path = file.path(folder_path, paste0("Level_", level))
     file = dir(file_path, pattern = paste0("^", block_number, "-"), full.names = T)
   } else{
-    level = getLevel(file_name)
+    block_summary = read.csv(file.path(folder_path, "block_summary.csv"))
+    n_level = max(block_summary$Nested_Level)
+    level = getLevel(file_name, n_level)
     file = file.path(folder_path, paste0("Level_", level), file_name)
   }
   gene_list = read.csv(file, header = FALSE)[,1]
@@ -173,19 +175,23 @@ makeEnrichment = function(block_path){
               XGR_CC = enGo_XGR_CC))
 }
 
-en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-06_mcmc_mode_hierarchical-SBM_gene-blocks")
+en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks")
 en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-06_mcmc_mode_hierarchical-SBM_gene-blocks")
 
 table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==1]!=0)
+table_en
 table_en/sum(table_en)
 
 table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==2]!=0)
+table_en
 table_en/sum(table_en)
 
 table_en = table(en_body$summary$n_enrich[en_body$summary$Nested_Level==1]!=0)
+table_en
 table_en/sum(table_en)
 
 table_en = table(en_body$summary$n_enrich[en_body$summary$Nested_Level==2]!=0)
+table_en
 table_en/sum(table_en)
 
 ggplot(filter(block_summary, Nested_Level == 1), aes(Assortatitvity, -log2(p.adjust), color = Parent)) +
