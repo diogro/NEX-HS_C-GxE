@@ -1,0 +1,103 @@
+---
+title: "GO in the head"
+author: ""
+date: "10/11/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(here)
+source(here::here("R/go_functions.R"))
+```
+
+## Reading GO enrichment object
+
+```{r cars}
+en_head = readRDS(here::here('data/enGo_head.Rds'))
+```
+
+## Level 3 blocks
+
+```{r}
+goplot_list = llply(en_head$summary$Name[en_head$summary$Nested_Level==3],
+                    XGR_plot, en_head$XGR, en_head$summary)
+names(goplot_list) = en_head$summary$Name[en_head$summary$Nested_Level==3]
+```
+
+
+### 0-0 - Neuro and sensing
+
+```{r , echo=FALSE}
+goplot_list[["0-0"]]
+```
+
+### 1-1 - Translation, protein transport, immune response
+
+```{r , echo=FALSE}
+goplot_list[["1-1"]]
+```
+
+
+### 2-1 - Sugar metabolism, proteolysis, Krebs Cycle
+
+```{r , echo=FALSE}
+goplot_list[["2-1"]]
+```
+
+
+### 3-0 - Development, transcription, splicing, cell respiration
+
+```{r , echo=FALSE}
+goplot_list[["3-0"]]
+```
+
+
+### 4-0 - Muscle delevelopment, krebs cycle
+
+```{r , echo=FALSE}
+goplot_list[["4-0"]]
+```
+
+# Probing some interesting blocks
+
+## Neuro
+
+### 0-0-0
+
+```{r, echo=FALSE}
+XGR_plot("0-0-0", en_head$XGR, en_head$summary)
+```
+
+Overall: [Gorilla 0-0-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/t9225cmq/GOResults.html)
+
+- 24 - Regulation, signal transduction, cell component assembly [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/guawsy78/GOResults.html)
+- 17 - Regulation [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/kqzedrl9/GOResults.html)
+- 7 - phototransduction, detection of light stimulus, G protein-coupled receptor signaling pathway	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/l41i3m00/GOResults.html)
+- 3 - RNA processing [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/oyxkgskl/GOResults.html)
+- 0 - neuropeptide signaling pathway, synaptic vesicle [transport|localization|exocytosis], synapse  [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/m3m7vxbz/GOResults.html)
+
+### 12-0-0
+
+```{r, echo=FALSE}
+XGR_plot("12-0-0", en_head$XGR, en_head$summary)
+```
+
+Overall: [Gorilla 12-0-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/pf4211os/GOResults.html)
+
+- 29 - trans-synaptic signaling [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/5rjvkbnh/GOResults.html)
+- 37 - [cell|neuron] recognition [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/b0f7z1bu/GOResults.html)
+- 48 - [reproductive|mating] behavior [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/dhry9dhc/GOResults.html)
+- 53 - Nada! Zilch! Nothing! [Gorilla]()
+
+## Translation
+
+### 1-1-1
+
+```{r, echo=FALSE}
+XGR_plot("1-1-1", en_head$XGR, en_head$summary)
+```
+
+Overall: [Gorilla 1-1-1](http://cbl-gorilla.cs.technion.ac.il/GOrilla/pf4211os/GOResults.html)
+
