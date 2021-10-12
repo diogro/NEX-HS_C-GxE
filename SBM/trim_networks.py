@@ -52,6 +52,17 @@ def filterByFDR(g, level, keepOnlyMain):
         tv.set_vertex_filter(main_component)
     return tv
 
+def saveGeneTable(g, gene_expr, output=None, transpose = False):
+    gene_list = []
+    for i in g.vertex_properties['genes']:
+        gene_list.append(i)
+    expr_df = gene_expr[gene_list]
+    if transpose is True:
+        expr_df = expr_df.T
+    if output is not None:
+        expr_df.to_csv(output)
+    return expr_df
+    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', '-v', action='store_true',
@@ -81,9 +92,9 @@ if __name__ == '__main__':
         print("Reading full graph...")
 
     if args.tissue == 'body':
-        g = load_graph("../data/output/SBM/graphs/VOOMCounts_CPM5_counts4M_covfree_body_ctrl_onlygenesinmainchr_Jul20.21.xml.gz")
+        g = load_graph("../data/output/SBM/graphs/VOOMCounts_CPM1_body_ctrl_249ind_counts3M_covfree_Aug3121.xml.gz")
     elif args.tissue == 'head':
-        g = load_graph("../data/output/SBM/graphs/VOOMCounts_CPM5_counts4M_covfree_head_ctrl_onlygenesinmainchr_Jul20.21.xml.gz")
+        g = load_graph("../data/output/SBM/graphs/VOOMCounts_CPM1_head_ctrl_248ind_counts3M_covfree_Aug3121.xml.gz")
 
     # Prune edges by correlation p-value using FDR
     if args.fdr is not None:
@@ -109,9 +120,10 @@ if __name__ == '__main__':
         Et = (N * N - N)/2
         E = len(gi.get_edges())
         density = E/Et
-        print("Density " + str(density))
+        print("Density: " + str(density))
         densitys.append(density)
-
+        print("Min correlation: ", min(gi.edge_properties[args.correlation].a))
+        print("Max correlation: ", max(gi.edge_properties[args.correlation].a))
         out_file = "../data/output/SBM/graphs/" + args.tissue
         if args.output is None:
             if args.cutoff is not None:

@@ -3,14 +3,16 @@
 module load conda/4.6.14-1
 conda activate gt
 
-values=(0.55 0.5 0.45 0.40 0.35 0.3)
-for i in "${values[@]}"
-    do
-        python fit_sbm.py \
-            --data VOOMCounts_CPM5_counts4M_covfree_head_ctrl_onlygenesinmainchr_Jul20.21_regularized_correlations_precisions_spearman_correlation_cutoff_0.1.xml.gz \
-            --correlation spearman \
-            --tissue head \
-            --sigma $i \
-            --type all \
-            --wait 1000 
-    done
+python fit_sbm.py --tissue head --no-layer --wait 10 \
+ --graph ../data/output/SBM/graphs/head_fdrLevel-1e-06_genes-2234_density-0.026.xml.gz \
+ --output fdr-1e-06 \
+ --type nested \
+ --block ../data/output/SBM/clustering/head_weights-spearman_fdr-1e-06_hierarchical-SBM.dill \
+ --mcmc --mcmc-iter 1000 &
+
+python fit_sbm.py --tissue head --no-layer --wait 10 \
+ --graph ../data/output/SBM/graphs/head_fdrLevel-1e-05_genes-2777_density-0.023.xml.gz \
+ --output fdr-1e-05 \
+ --type nested \
+ --block ../data/output/SBM/clustering/head_weights-spearman_fdr-1e-05_hierarchical-SBM.dill \
+ --mcmc --mcmc-iter 1000 &
