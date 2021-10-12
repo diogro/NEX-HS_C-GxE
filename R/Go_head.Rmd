@@ -72,8 +72,8 @@ XGR_plot("0-0-0", en_head$XGR, en_head$summary)
 
 Overall: [Gorilla 0-0-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/t9225cmq/GOResults.html)
 
-- 24 - Regulation, signal transduction, cell component assembly [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/guawsy78/GOResults.html)
-- 17 - Regulation [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/kqzedrl9/GOResults.html)
+- 24 - Biological regulation, signal transduction, cell component assembly, neuro development [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/guawsy78/GOResults.html)
+- 17 - Regulation of cellular process [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/kqzedrl9/GOResults.html)
 - 7 - phototransduction, detection of light stimulus, G protein-coupled receptor signaling pathway	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/l41i3m00/GOResults.html)
 - 3 - RNA processing [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/oyxkgskl/GOResults.html)
 - 0 - neuropeptide signaling pathway, synaptic vesicle [transport|localization|exocytosis], synapse  [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/m3m7vxbz/GOResults.html)
@@ -89,7 +89,7 @@ Overall: [Gorilla 12-0-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/pf4211os/
 - 29 - trans-synaptic signaling [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/5rjvkbnh/GOResults.html)
 - 37 - [cell|neuron] recognition [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/b0f7z1bu/GOResults.html)
 - 48 - [reproductive|mating] behavior [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/dhry9dhc/GOResults.html)
-- 53 - Nada! Zilch! Nothing! [Gorilla]()
+- 53 - Nada! Zilch! Nothing! [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/00a4edhz/GOResults.html)
 
 ## Translation
 
@@ -99,5 +99,103 @@ Overall: [Gorilla 12-0-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/pf4211os/
 XGR_plot("1-1-1", en_head$XGR, en_head$summary)
 ```
 
-Overall: [Gorilla 1-1-1](http://cbl-gorilla.cs.technion.ac.il/GOrilla/pf4211os/GOResults.html)
+Overall: [Gorilla 1-1-1](http://cbl-gorilla.cs.technion.ac.il/GOrilla/nlj5mvjc/GOResults.html)
 
+- 1 - macromolecule biosynthetic process, translation [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/nrzyaooi/GOResults.html)
+- 9 - cytoplasmic translation [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/8ponxj6c/GOResults.html)
+- 33 - cytoplasmic translation, rRNA processing [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/hvl0wwk1/GOResults.html)
+- 35 - translation, [peptide|peptide] biosynthetic process, ribosomal large subunit assembly [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/1ibmyrs2/GOResults.html)
+
+### 6-1-1
+
+```{r, echo=FALSE}
+XGR_plot("6-1-1", en_head$XGR, en_head$summary)
+```
+
+Overall: [Gorilla 6-1-1](http://cbl-gorilla.cs.technion.ac.il/GOrilla/myfdufik/GOResults.html)
+
+
+- 8 - translational initiation [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/q1x8kdjy/GOResults.html)
+- 14 - translation, [peptide|peptide biosynthetic process] biosynthetic process, ribonucleoprotein complex subunit organization	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/0i8n6vol/GOResults.html)
+- 44 - cytoplasmic translation [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/bipi9j66/GOResults.html)
+- 49 - nucleobase-containing small molecule biosynthetic process (super weak)	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/5s5xcg23/GOResults.html)
+
+## Immune response
+
+### 10-1-1
+
+```{r, echo=FALSE}
+XGR_plot("10-1-1", en_head$XGR, en_head$summary)
+```
+
+Overall: [Gorilla 10-1-1](http://cbl-gorilla.cs.technion.ac.il/GOrilla/0niexouo/GOResults.html)
+
+- 15 - establishment of protein localization, protein transport	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/ojylaaqx/GOResults.html)
+- 22 - protein targeting to membrane, translocation [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/0w4pu6m4/GOResults.html)
+- 52 - response to other organism, 	response to external biotic stimulus, defense response [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/n543uzcv/GOResults.html)
+
+## Cell respiration
+
+### 11-3-0
+
+```{r, echo=FALSE}
+XGR_plot("11-3-0", en_head$XGR, en_head$summary)
+```
+
+Overall: [Gorilla 11-3-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/8osn851b/GOResults.html)
+
+
+- 20 - electron transport chain, generation of precursor metabolites and energy, oxidation-reduction process, mitochondrial respiratory chain complex assembly	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/97whbz6e/GOResults.html)
+- 21 - multicellular organism reproduction (weak) [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/prj4unq1/GOResults.html)
+- 26 - purine ribonucleotide biosynthetic process, ATP biosynthetic process, ATP metabolic process, acyl-CoA biosynthetic process	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/tkc86ux8/GOResults.html) 
+
+## Development
+
+### 7-3-0
+
+```{r, echo=FALSE}
+XGR_plot("7-3-0", en_head$XGR, en_head$summary)
+```
+
+Overall: [Gorilla 7-3-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/78gpi3iz/GOResults.htmll)
+
+- 11 - apposition of dorsal and ventral imaginal disc-derived wing surfaces, sarcomere organization, proton transmembrane transport	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/j6uasu8e/GOResults.html)
+- 27 - anatomical structure morphogenesis, developmental process	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/2nnwdok2/GOResults.html)
+- 51 - Nothing [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/fn7vq86w/GOResults.html)
+
+
+## Transcription and protein metabolism
+
+### Protein Catabolism
+
+```{r, echo=FALSE}
+XGR_plot("4-3-0", en_head$XGR, en_head$summary)
+```
+
+Overall: [Gorilla 4-3-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/biznpxxr/GOResults.html)
+
+- 5 - protein catabolic process, proteasome-mediated ubiquitin-dependent protein catabolic process, mRNA splicing [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/ocor5ovg/GOResults.html)
+- 50 - superoxide metabolic process (weak) [Gorilla](http://cbl-gorilla.cs.technion.ac.il/servlet/GOrilla?id=1tkubwji)
+
+### Translation (and some weird misc)
+
+```{r, echo=FALSE}
+XGR_plot("3-3-0", en_head$XGR, en_head$summary)
+```
+
+Overall: [Gorilla 3-3-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/lrmmvnxq/GOResults.html)
+
+- 4 - Largest block (500 genes) -  nucleic acid metabolic process, RNA metabolic process, regulation of gene expression [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/wzsd5uvj/GOResults.html)
+- 25 - renal filtration (weak) [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/tn8zdgqm/GOResults.html)
+- 28 - regulation of macromolecule metabolic process, regulation of gene expression	, mRNA splicing [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/98molyys/GOResults.html)
+- 31 - axon guidance, cell recognition, neuron projection guidance	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/aei7zmpt/GOResults.html)
+- 34 - extracellular matrix organization	(weak) [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/492x8puw/GOResults.html)
+- 40 - chitin metabolic process, chitin metabolic process	(weak) [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/rdj38g2t/GOResults.html)
+- 43 - basement membrane organization, cell-substrate adhesion (weak) [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/7q6mkafo/GOResults.html)
+- 55 - immune response, humoral immune response, defense response to bacterium	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/9esgzndl/GOResults.html)
+
+## Block summary table:
+
+```{r}
+dplyr::select(en_head$summary, Nested_Level, Name, N_genes, Internal_degree, Assortatitvity,  p.adjust, n_enrich)
+```
