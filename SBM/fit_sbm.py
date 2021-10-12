@@ -66,6 +66,7 @@ def run_non_nested_SBM(g, corr, args):
 
 def run_nested_SBM(g, corr, args, blocks=None):
 
+    print("Creating nested model...")
     if args.layer is True:
         state_min = minimize_nested_blockmodel_dl(g, init_bs=blocks, 
                                                   state_args=dict(base_type=LayeredBlockState,
@@ -80,22 +81,50 @@ def run_nested_SBM(g, corr, args, blocks=None):
 
 
     initial_entropy = state_min.entropy()
-    print("Running nested model. Initial entropy: " + str(initial_entropy))
-    mcmc_equilibrate(state_min, wait=args.wait, mcmc_args=dict(niter=10))
-    print("Final entropy: " + str(state_min.entropy()))
+    print("Created nested model. Initial entropy: " + str(initial_entropy))
 
-    if state_min.entropy() < initial_entropy:
-        plot_file = out_folder + "plots/graph_plot_" + out_label + "_clustered-hierarchical-SBM.png"
-        state_min.draw(output = plot_file)
+    if args.annealing > 0:
+        S1 = state_min.entropy()
+        print("Starting annealing...")
+        mcmc_anneal(state_min, beta_range=(1, 10), niter=args.annealing, 
+                    mcmc_equilibrate_args=dict(force_niter=10))
+        S2 = state_min.entropy()
+        print("Improvement from annealing:", S2 - S1)
+        print("Final entropy after annealing: " + str(state_min.entropy()))
 
-        nested_block_df = create_nestedBlock_df(g, corr, state_min)
-        output_file = out_folder + "clustering/" + out_label + "_hierarchical-SBM.csv"
-        nested_block_df.to_csv(output_file)
+        if state_min.entropy() < initial_entropy:
+            plot_file = out_folder + "plots/graph_plot_" + out_label + "_clustered-hierarchical-SBM.png"
+            state_min.draw(output = plot_file)
 
-        block_state = [g, state_min.get_bs()]
-        output_file = out_folder + "clustering/" + out_label + "_hierarchical-SBM.dill"
-        with open(output_file, 'wb') as fh:
-            dill.dump(block_state, fh, recurse=True)
+            nested_block_df = create_nestedBlock_df(g, corr, state_min)
+            output_file = out_folder + "clustering/" + out_label + "_hierarchical-SBM.csv"
+            nested_block_df.to_csv(output_file)
+
+            block_state = state_min.get_bs()
+            output_file = out_folder + "clustering/" + out_label + "_hierarchical-SBM.dill"
+            with open(output_file, 'wb') as fh:
+                dill.dump(block_state, fh, recurse=True)
+
+
+    if args.wait > 0:
+        print("Starting MCMC equilibration...")
+        initial_entropy = state_min.entropy()
+        mcmc_equilibrate(state_min, wait=args.wait, mcmc_args=dict(niter=10))
+        print("Improvement from equilibration:", state_min.entropy() - initial_entropy)
+        print("Final entropy after equilibration: " + str(state_min.entropy()))
+
+        if state_min.entropy() < initial_entropy:
+            plot_file = out_folder + "plots/graph_plot_" + out_label + "_clustered-hierarchical-SBM.png"
+            state_min.draw(output = plot_file)
+
+            nested_block_df = create_nestedBlock_df(g, corr, state_min)
+            output_file = out_folder + "clustering/" + out_label + "_hierarchical-SBM.csv"
+            nested_block_df.to_csv(output_file)
+
+            block_state = state_min.get_bs()
+            output_file = out_folder + "clustering/" + out_label + "_hierarchical-SBM.dill"
+            with open(output_file, 'wb') as fh:
+                dill.dump(block_state, fh, recurse=True)
 
     if args.mcmc == True:
         bs = []
@@ -108,7 +137,7 @@ def run_nested_SBM(g, corr, args, blocks=None):
                 h[l][B] += 1
 
         print("Starting MCMC.")
-        # Now we collect the marginals for exactly 100,000 sweeps
+        # Now we collect the marginals for exactly args.iter*10 sweeps
         mcmc_equilibrate(state_min, force_niter=args.iter, mcmc_args=dict(niter=10),
                          callback=collect_partitions)
 
@@ -121,6 +150,7 @@ def run_nested_SBM(g, corr, args, blocks=None):
         state = state_min.copy(bs=bs_max)
 
         print("Description lenght improvement in mcmc: " + str(state_min.entropy() - state.entropy()))
+        print("Final entropy after MCMC: " + str(state.entropy()))
 
         plot_file = out_folder + "plots/graph_plot_" + out_label + "_mcmc_mode_clustered-hierarchical-SBM.png"
         state.draw(output = plot_file)
@@ -138,7 +168,7 @@ def run_nested_SBM(g, corr, args, blocks=None):
         output_file = out_folder + "clustering/" + out_label + "_mcmc_mode_hierarchical-SBM_levels_histogram.csv"
         pd.DataFrame(h).to_csv(output_file)
 
-        block_state = [g, state.get_bs()]
+        block_state = state.get_bs()
         output_file = out_folder + "clustering/" + out_label + "_mcmc_mode_hierarchical-SBM.dill"
         with open(output_file, 'wb') as fh:
             dill.dump(block_state, fh, recurse=True)
@@ -159,9 +189,8 @@ if __name__ == '__main__':
             help=('Number of runs without improvement of block partition in equilibration.'))
     parser.add_argument('--graph',
             help=('Path to the full input graph generated by graph-tool.'))
-    parser.add_argument('--block', dest='block', action='store_true')
-    parser.add_argument('--no-block', dest='block', action='store_false')
-    parser.set_defaults(block=False)
+    parser.add_argument('--block',
+            help=('Path to the pickled infered block structure.'))
     parser.add_argument('--output', required=True,
             help=('Output label.'))
     parser.add_argument('--tissue', required=True,
@@ -178,16 +207,18 @@ if __name__ == '__main__':
     parser.set_defaults(mcmc=False)
     parser.add_argument('--mcmc-iter', dest='iter', default = 10000, type=int,
     help=('Number of MCMC iterations.'))
+    parser.add_argument('--annealing', dest='annealing', default = 0, type=int,
+    help=('Number of MCMC simulated annealing iterations.'))
     args = parser.parse_args()
 
-    if args.block is None or args.block is False:
-        g = load_graph(args.graph)
+    print("Loading graph...")
+    g = load_graph(args.graph)
+    if args.block is None:
         bs = None
     else:
-        with open (args.graph, "rb") as fh:
-            emp = dill.load(fh)
-        g = emp[0]
-        bs = emp[1]
+        print("Loading blocks...")
+        with open (args.block, "rb") as fh:
+            bs = dill.load(fh)
 
     corr = g.edge_properties[args.correlation]
     g.ep.positive = g.new_edge_property("int", (np.sign(corr.a) + 1)/2)
@@ -196,10 +227,13 @@ if __name__ == '__main__':
     g.ep.z_s = g.new_edge_property("double", (2*np.arctanh(corr.a)))
 
     N = len(g.get_vertices())
-    print(N)
+    print("Genes: ", N)
     Et = (N * N - N)/2
     E = len(g.get_edges())
-    print(E/Et)
+    print("Density: ", E/Et)
+
+    print("Min correlation: ", min(g.edge_properties[args.correlation].a))
+    print("Max correlation: ", max(g.edge_properties[args.correlation].a))
 
     out_folder = "../data/output/SBM/"
     out_label = args.tissue + "_weights-" + args.correlation + "_" + args.output
