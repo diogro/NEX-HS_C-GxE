@@ -66,6 +66,7 @@ def run_non_nested_SBM(g, corr, args):
 
 def run_nested_SBM(g, corr, args, blocks=None):
 
+    print("Creating nester model...")
     if args.layer is True:
         state_min = minimize_nested_blockmodel_dl(g, init_bs=blocks, 
                                                   state_args=dict(base_type=LayeredBlockState,
