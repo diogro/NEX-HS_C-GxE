@@ -80,18 +80,36 @@ def run_nested_SBM(g, corr, args, blocks=None):
 
 
     initial_entropy = state_min.entropy()
-    print("Running nested model. Initial entropy: " + str(initial_entropy))
+    print("Created nested model. Initial entropy: " + str(initial_entropy))
 
     if args.annealing > 0:
         S1 = state_min.entropy()
+        print("Starting annealing...")
         mcmc_anneal(state_min, beta_range=(1, 10), niter=args.annealing, 
                     mcmc_equilibrate_args=dict(force_niter=10))
         S2 = state_min.entropy()
         print("Improvement from annealing:", S2 - S1)
+        print("Final entropy after annealing: " + str(state_min.entropy()))
+
+    if state_min.entropy() < initial_entropy:
+        plot_file = out_folder + "plots/graph_plot_" + out_label + "_clustered-hierarchical-SBM.png"
+        state_min.draw(output = plot_file)
+
+        nested_block_df = create_nestedBlock_df(g, corr, state_min)
+        output_file = out_folder + "clustering/" + out_label + "_hierarchical-SBM.csv"
+        nested_block_df.to_csv(output_file)
+
+        block_state = state_min.get_bs()
+        output_file = out_folder + "clustering/" + out_label + "_hierarchical-SBM.dill"
+        with open(output_file, 'wb') as fh:
+            dill.dump(block_state, fh, recurse=True)
+
 
     if args.wait > 0:
+        print("Starting MCMC equilibration...")
+        initial_entropy = state_min.entropy()
         mcmc_equilibrate(state_min, wait=args.wait, mcmc_args=dict(niter=10))
-        print("Final entropy: " + str(state_min.entropy()))
+        print("Final entropy after equilibration: " + str(state_min.entropy()))
 
     if state_min.entropy() < initial_entropy:
         plot_file = out_folder + "plots/graph_plot_" + out_label + "_clustered-hierarchical-SBM.png"
