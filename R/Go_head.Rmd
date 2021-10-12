@@ -1,10 +1,11 @@
 ---
 title: "GO in the head"
-author: ""
+author: ''
 date: "10/11/2021"
 output:
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
