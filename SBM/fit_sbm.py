@@ -227,10 +227,10 @@ if __name__ == '__main__':
     g.ep.z_s = g.new_edge_property("double", (2*np.arctanh(corr.a)))
 
     N = len(g.get_vertices())
-    print(N)
+    print("Genes: ", N)
     Et = (N * N - N)/2
     E = len(g.get_edges())
-    print(E/Et)
+    print("Density: ", E/Et)
 
     print("Min correlation: ", min(g.edge_properties[args.correlation].a))
     print("Max correlation: ", max(g.edge_properties[args.correlation].a))
