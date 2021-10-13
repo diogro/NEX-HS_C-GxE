@@ -1,7 +1,7 @@
 source("R/go_functions.R")
 
 en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_mcmc_mode_hierarchical-SBM_gene-blocks")
-en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-06_mcmc_mode_hierarchical-SBM_gene-blocks")
+en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks")
 saveRDS(en_head, 'data/enGo_head.Rds')
 saveRDS(en_body, 'data/enGo_body.Rds')
 
@@ -49,14 +49,14 @@ ggplot(filter(block_summary, Nested_Level == 2), aes(Assortatitvity, n_enrich_si
 ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, n_enrich_simple, color = Parent)) +
   geom_point() + geom_label_repel(aes(label = Block))
 
-goplot_list = llply(en_body$summary$Name[en_body$summary$Nested_Level==4],
+goplot_list = llply(en_body$summary$Name[en_body$summary$Nested_Level==3],
                     XGR_plot, en_body$XGR, en_body$summary)
 XGR_plot(x="0-0-0-0", enGo = en_body$XGR, summary = en_body$summary)
 #save_plot("go_head_level_11-1-0-super_translation.png", XGR_plot("11-1-0"), base_height = 7, base_asp = 0.25, ncol=4)
 
 
-goplot_list = llply(en_head$summary$Name[en_head$summary$Nested_Level==3],
-                    XGR_plot, en_head$XGR, en_head$summary)
+goplot_list = llply(en_body$summary$Name[en_body$summary$Nested_Level==5],
+                    XGR_plot, en_body$XGR, en_body$summary)
 
 XGR_plot(x="3-3-0", enGo = en_head$XGR, summary = en_head$summary)
 
