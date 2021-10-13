@@ -1,0 +1,199 @@
+---
+title: "GO in the body"
+author: "Diogo Melo"
+date: "10/11/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(here)
+source(here::here("R/go_functions.R"))
+```
+
+## Reading GO enrichment object
+
+```{r cars}
+en_body = readRDS(here::here('data/enGo_body.Rds'))
+```
+
+## Level 3 blocks
+
+```{r}
+goplot_list = llply(en_body$summary$Name[en_body$summary$Nested_Level==3],
+                    XGR_plot, en_body$XGR, en_body$summary)
+names(goplot_list) = en_body$summary$Name[en_body$summary$Nested_Level==3]
+```
+
+
+### 0-2-0 - Biological Regulation, Cell Cycle, Transcription
+
+```{r , echo=FALSE}
+goplot_list[["0-2-0"]]
+```
+
+### 1-1-1 - Cell Respiration, Krebs Cycle, Translation, Muscle Development
+
+```{r , echo=FALSE}
+goplot_list[["1-1-1"]]
+```
+
+
+### 2-0-0 - Catabolism, Mitocondrial translation, peptide metabolism, development
+
+```{r , echo=FALSE}
+goplot_list[["2-0-0"]]
+```
+
+
+### 3-0 - Immune response, eggshell chorion assembly
+
+```{r , echo=FALSE}
+goplot_list[["3-0-0"]]
+```
+
+# Probing some interesting blocks
+
+## Cell Cycle, Regulation of macromolecules
+
+### 0-0-2-0
+
+```{r, echo=FALSE}
+XGR_plot("0-0-2-0", en_body$XGR, en_body$summary)
+```
+
+Overall: [Gorilla 0-0-2-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/xap3p9z3/GOResults.html)
+
+- 0 - 	regulation of cellular process, regulation of transcription, 	cell cycle process, mRNA splicing [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/z8ds133u/GOResults.html)
+- 16 - cell cycle process, chromatin organization, reproductive process, eggshell chorion gene amplification [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/fnda9tcd/GOResults.html)
+- 23 - regulation of G2/M transition of mitotic cell cycle	(weak)	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/5j0ajcgq/GOResults.html)
+- 56 - mitotic cell cycle phase transition, regulation of cyclin-dependent protein kinase activity	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/pdsr3lry/GOResults.html)
+
+### 6-0-2-0
+
+```{r, echo=FALSE}
+XGR_plot("6-0-2-0", en_body$XGR, en_body$summary)
+```
+
+Overall: [Gorilla 6-0-2-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/rrla70e6/GOResults.html)
+
+- 6 -  regulation of cell cycle process, regulation of cellular metabolic process	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/q2mxghsn/GOResults.html)
+- 8 - regulation of gene expression, regulation of metabolic process	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/87kclu7o/GOResults.html)
+- 11 - regulation of primary metabolic process [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/sydqh61h/GOResults.html)
+- 20 - regulation of biological process	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/gf2rn2if/GOResults.html)
+
+## Development, biological regulation, metabolism
+
+### 2-0-2-0
+
+```{r, echo=FALSE}
+XGR_plot("2-0-2-0", en_body$XGR, en_body$summary)
+```
+
+Overall: [Gorilla 2-0-2-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/3eempwzu/GOResults.html)
+
+- 2 - animal organ development, anatomical structure development, anatomical structure development, several tissue specific development, regulation of transcription, regulation of RNA biosynthetic process		 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/ssm2rcjf/GOResults.html)
+- 15 - motor neuron axon guidance,	[glial|stem] cell fate determination	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/7ibrhev1/GOResults.html)
+- 26 - regulation of metabolic process	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/s9p65yxi/GOResults.html)
+- 27 - developmental process, regulation of metabolic process		 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/dwtr3fai/GOResults.html)
+- 43 - regulation of RNA metabolic process, regulation of gene expression [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/m1g9ks2e/GOResults.html)
+
+## Cell Development and metabolism, in a different level 3 block
+
+### 10-2-0-0
+
+```{r, echo=FALSE}
+XGR_plot("10-2-0-0", en_body$XGR, en_body$summary)
+```
+
+Overall: [Gorilla 10-2-0-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/te5drfp1/GOResults.html)
+
+- 19 - cellular metabolic process	, protein catabolic process	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/miwqjjg0/GOResults.html)
+- 28 - cell development, regulation of metabolic process	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/61wcq6uz/GOResults.html)
+- 29 - negative regulation of translation, posttranscriptional regulation of gene expression, 	mRNA metabolic process	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/5o9ewc3z/GOResults.html)
+
+### 8-2-0-0
+
+```{r, echo=FALSE}
+XGR_plot("8-2-0-0", en_body$XGR, en_body$summary)
+```
+
+Overall: [Gorilla 8-2-0-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/6pcc6m6v/GOResults.html)
+
+- 14 - biological regulation, actin filament polymerization	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/n9of4wk7/GOResults.html)
+- 25 - positive regulation of cellular process, developmental process, regulation of growth, cell migration, cell differentiation	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/xwn57knu/GOResults.html)
+- 31 - negative regulation of biological process, regulation of signal transduction, regulation of cell communication	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/xqlpgtsa/GOResults.html)
+
+
+## Translation and Cell respiration (really mixed together!)
+
+### 1-1-1-1
+
+```{r, echo=FALSE}
+XGR_plot("1-1-1-1", en_body$XGR, en_body$summary)
+```
+
+
+Overall: [Gorilla 1-1-1-1](http://cbl-gorilla.cs.technion.ac.il/GOrilla/ey17qxn8/GOResults.html)
+
+- 1 - cytoplasmic translation, cellular macromolecule biosynthetic process	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/idmp5x5m/GOResults.html)
+- 9 - cytoplasmic translation, ribosomal small subunit assembly	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/h5nmmy46/GOResults.html)
+- 41 - respiratory electron transport chain, mitochondrial electron transport, NADH to ubiquinone	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/1mdswiq9/GOResults.html)
+
+### 11-1-1-1
+
+```{r, echo=FALSE}
+XGR_plot("11-1-1-1", en_body$XGR, en_body$summary)
+```
+
+
+Overall: [Gorilla 11-1-1-1](http://cbl-gorilla.cs.technion.ac.il/GOrilla/rccwxyys/GOResults.html)
+
+
+- 24 - respiratory electron transport chain, ketone biosynthetic process [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/mteahylg/GOResults.html)
+- 40 - cytoplasmic translation, [peptide|amide] biosynthetic process, macromolecule biosynthetic process	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/cw36sue3/GOResults.html)
+- 44 - cytoplasmic translation, mitochondrial electron transport, cytochrome c to oxygen		 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/5pcigyfc/GOResults.html)
+- 52 - mitochondrial electron transport, ubiquinol to cytochrome c	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/4w6qocki/GOResults.html)
+- 53 - cytoplasmic translation, macromolecule biosynthetic process			[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/xdtxvbzj/GOResults.html)
+
+### 9-1-1-1
+
+```{r, echo=FALSE}
+XGR_plot("9-1-1-1", en_body$XGR, en_body$summary)
+```
+
+Overall: [Gorilla 9-1-1-1](http://cbl-gorilla.cs.technion.ac.il/GOrilla/gzsczx66/GOResults.html)
+
+- 18 - cytoplasmic translation	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/32ims798/GOResults.html)
+- 38 - oxidation-reduction process	(weak) [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/agq2y8mv/GOResults.html)
+- 42 - transmembrane transport	(weak) [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/unvjurct/GOResults.html)
+- 48 - tricarboxylic acid cycle	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/rxhkg0tb/GOResults.html)
+- 49 - ATP synthesis coupled proton transport	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/n5p5jmwx/GOResults.html)
+
+## Small molecule metabolism, muscle formation
+
+### 7-1-1-1
+
+```{r, echo=FALSE}
+XGR_plot("7-1-1-1", en_body$XGR, en_body$summary)
+```
+
+Overall: [Gorilla 7-1-1-1](http://cbl-gorilla.cs.technion.ac.il/GOrilla/gzsczx66/GOResults.html)
+
+- 12 - proteolysis (weak) [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/41t5yezc/GOResults.html)
+- 17 - ion transport [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/4x5s1p8a/GOResults.html)
+- 37 - fatty acid biosynthetic and metabolic process	, acyl-CoA metabolic process	 [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/7yb8fuoc/GOResults.html)
+- 39 - glutathione metabolic process		[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/1pjb0wwm/GOResults.html)
+- 45 - myofibril assembly, mesoderm development,	actomyosin structure organization		[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/yi8wxjwr/GOResults.html)
+- 47 - Nothing!	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/wuybx2wf/GOResults.html)
+
+## Egg shell and Immune response
+
+[Gorilla 12-3-0-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/gigasneu/GOResults.html)
+
+## Block summary table:
+
+```{r}
+dplyr::select(en_body$summary, Nested_Level, Name, N_genes, Internal_degree, Assortatitvity,  p.adjust, n_enrich)
+```
