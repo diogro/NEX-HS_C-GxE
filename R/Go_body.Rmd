@@ -40,7 +40,7 @@ goplot_list[["1-1"]]
 ```
 
 
-### 2-0 - Catabolism, Mitocondrial translation, peptide metabolism, development
+### 2-2 - Catabolism, Mitocondrial translation, peptide metabolism, development
 
 ```{r , echo=FALSE}
 goplot_list[["2-2"]]
@@ -188,9 +188,20 @@ Overall: [Gorilla 7-1-1](http://cbl-gorilla.cs.technion.ac.il/GOrilla/gzsczx66/G
 - 44 - myofibril assembly, mesoderm development,	actomyosin structure organization		[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/yi8wxjwr/GOResults.html)
 - 46 - Nothing!	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/wuybx2wf/GOResults.html)
 
-## Egg shell and Immune response
+## Eggshell formation and Immune response
 
-[Gorilla 12-3-2](http://cbl-gorilla.cs.technion.ac.il/GOrilla/gigasneu/GOResults.html)
+### 12-3-2
+
+- 31 - Eggshell formation and Immune response (weak) [Gorilla 31-12-3-2](http://cbl-gorilla.cs.technion.ac.il/GOrilla/akb9b3fh/GOResults.html)
+
+### 3-2-2
+
+```{r, echo=FALSE}
+XGR_plot("3-2-2", en_body$XGR, en_body$summary)
+```
+
+- 13 - Eggshell formation - [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/vbelqxw7/GOResults.html)
+- 33 - Immune response - [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/kvotkkhd/GOResults.html)
 
 ## Block summary table:
 
