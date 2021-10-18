@@ -5,6 +5,25 @@ en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1
 saveRDS(en_head, 'data/enGo_head.Rds')
 saveRDS(en_body, 'data/enGo_body.Rds')
 
+en_head_abs = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
+en_body_abs = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
+saveRDS(en_head_abs, 'data/enGo_head_abs.Rds')
+saveRDS(en_body_abs, 'data/enGo_body_abs.Rds')
+
+en_head = readRDS('data/enGo_head.Rds')
+en_body = readRDS('data/enGo_body.Rds')
+
+en_head_table = ldply(en_head$CP, function(x) x@result) %>% filter(p.adjust < 0.05, Count >= 4)
+write.csv(en_head_table, file  = "en_head.csv")
+en_body_table = ldply(en_body$CP, function(x) x@result) %>% filter(p.adjust < 0.05, Count >= 4)
+write.csv(en_body_table, file  = "en_body.csv")
+
+
+
+table_en = table(en_head_abs$summary$n_enrich[en_head_abs$summary$Nested_Level==1]!=0)
+table_en
+table_en/sum(table_en)
+
 table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==1]!=0)
 table_en
 table_en/sum(table_en)
@@ -12,6 +31,9 @@ table_en/sum(table_en)
 table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==2]!=0)
 table_en
 table_en/sum(table_en)
+
+table_en = table(en_body_abs$summary$n_enrich[en_body_abs$summary$Nested_Level==1]!=0)
+table_en
 
 table_en = table(en_body$summary$n_enrich[en_body$summary$Nested_Level==1]!=0)
 table_en
@@ -51,14 +73,15 @@ ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, n_enrich_simple, c
 
 goplot_list = llply(en_body$summary$Name[en_body$summary$Nested_Level==3],
                     XGR_plot, en_body$XGR, en_body$summary)
-XGR_plot(x="0-0-2", enGo = en_body$XGR, summary = en_body$summary)
+XGR_plot(x="13-1-0", enGo = en_body$XGR, summary = en_body$summary)
 #save_plot("go_head_level_11-1-0-super_translation.png", XGR_plot("11-1-0"), base_height = 7, base_asp = 0.25, ncol=4)
-
+goplot_list = llply(en_head$summary$Name[en_head$summary$Nested_Level==3],
+                    XGR_plot, en_head$XGR, en_head$summary)
 
 goplot_list = llply(en_body$summary$Name[en_body$summary$Nested_Level==5],
                     XGR_plot, en_body$XGR, en_body$summary)
 
-XGR_plot(x="3-3-0", enGo = en_head$XGR, summary = en_head$summary)
+XGR_plot(x="0-0-0", enGo = en_head$XGR, summary = en_head$summary)
 
 
 

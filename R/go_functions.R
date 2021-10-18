@@ -113,7 +113,7 @@ CP_plot = function(x, enGo_CP_simple, summary){
   if(length(l) > 2){
     print(x)
     df = ldply(l, function(x) dplyr::select(x@result, -geneID), .id = "Block") %>%
-      filter(p.adjust < 0.05)
+      filter(p.adjust < 0.05, count >= 5)
     goplot <- df %>%
       ggplot(aes(Description, -log2(p.adjust))) +
       geom_bar(stat="identity")  + coord_flip()
@@ -169,11 +169,11 @@ makeEnrichment = function(block_path){
 
   block_summary$p.adjust = laply(enGo_CP, function(x) dplyr::select(x@result, p.adjust)[1,])
   block_summary$n_enrich = laply(enGo_CP,
-                                 function(x) dplyr::select(x@result, p.adjust) %>%
-                                   filter(p.adjust < 0.05) %>% nrow)
+                                 function(x) dplyr::select(x@result, p.adjust, Count) %>%
+                                   filter(p.adjust < 0.05, Count >= 4) %>% nrow)
   block_summary$n_enrich_simple = laply(enGo_CP_simple,
-                                        function(x) dplyr::select(x@result, p.adjust) %>%
-                                          filter(p.adjust < 0.05) %>% nrow)
+                                        function(x) dplyr::select(x@result, p.adjust, Count) %>%
+                                          filter(p.adjust < 0.05, Count >= 4) %>% nrow)
   return(list(summary = block_summary,
               CP = enGo_CP,
               CP_simple = enGo_CP_simple,
