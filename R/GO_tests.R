@@ -51,7 +51,7 @@ ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, n_enrich_simple, c
 
 goplot_list = llply(en_body$summary$Name[en_body$summary$Nested_Level==3],
                     XGR_plot, en_body$XGR, en_body$summary)
-XGR_plot(x="0-0-0-0", enGo = en_body$XGR, summary = en_body$summary)
+XGR_plot(x="0-0-2", enGo = en_body$XGR, summary = en_body$summary)
 #save_plot("go_head_level_11-1-0-super_translation.png", XGR_plot("11-1-0"), base_height = 7, base_asp = 0.25, ncol=4)
 
 
