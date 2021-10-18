@@ -67,7 +67,7 @@ makeEmatrixPlots = function(header,
     if(level < levels){
       for(i in level:(levels-1)){
         b_size_df = getBlockSizedf(i, block_df, all = TRUE, level)
-        plot = plot + geom_rect(data = b_size_df, color = "tomato3", alpha = 0,
+        plot = plot + geom_rect(data = b_size_df, color = "tomato3", alpha = 0, size = 1,
                                 aes(x = NULL, y = NULL, fill = NULL, xmin=start, xmax=end,
                                     ymin=start, ymax=end))
       }
@@ -79,10 +79,13 @@ makeEmatrixPlots = function(header,
   all_plots = plot_grid(plotlist = plot_list)
   save_plot(file.path(plot_path, paste0(header, "_E_matrices.png")), all_plots,
             base_height = 10, base_asp = 1.2, ncol = 3, nrow = 2)
-  return(list(df = block_df, E = e_mats, plots = all_plots))
+  return(list(df = block_df, E = e_mats, plots = all_plots, plot_list = plot_list))
 }
 
-out_fdr_0.5_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-06_mcmc_mode", levels = 4)
-out_fdr_0.5_head$plots
-out_fdr_0.5_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-06_mcmc_mode", levels = 4)
-out_fdr_0.5_body$plots
+out_fdr_0.4_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-04_mcmc_mode", levels = 4)
+out_fdr_0.5_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-05_mcmc_mode", levels = 4)
+
+
+plot_grid(out_fdr_0.4_head$plot_list[[1]] + ggtitle("Head - Level 1"),
+          out_fdr_0.5_body$plot_list[[1]] + ggtitle("Body - Level 1"))
+
