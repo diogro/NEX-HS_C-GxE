@@ -61,7 +61,7 @@ makeEmatrixPlots = function(header,
     #plot heatmap
     plot = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
       geom_tile() +
-      scale_fill_viridis_c(alpha = 1)  + theme_tufte() +
+      scale_fill_viridis_c(alpha = 1)  + theme_cowplot() +
       labs(y = "Blocks", x = "Blocks") + ggtitle(paste("Level", level)) +
       theme(axis.text.x = element_text(angle=45, vjust=0.6), legend.position = "none")
     if(level < levels){
@@ -86,6 +86,7 @@ out_fdr_0.4_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-04_mcmc_mode",
 out_fdr_0.5_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-05_mcmc_mode", levels = 4)
 
 
-plot_grid(out_fdr_0.4_head$plot_list[[1]] + ggtitle("Head - Level 1"),
-          out_fdr_0.5_body$plot_list[[1]] + ggtitle("Body - Level 1"))
+plot = plot_grid(out_fdr_0.4_head$plot_list[[1]] + ggtitle("Head - SBM Level-1"),
+          out_fdr_0.5_body$plot_list[[1]] + ggtitle("Body - SBM Level-1"))
+save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 10, ncol = 2, base_asp = 1.1)
 
