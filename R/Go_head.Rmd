@@ -157,7 +157,7 @@ Overall: [Gorilla 11-3-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/8osn851b/
 XGR_plot("7-3-0", en_head$XGR, en_head$summary)
 ```
 
-Overall: [Gorilla 7-3-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/78gpi3iz/GOResults.htmll)
+Overall: [Gorilla 7-3-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/78gpi3iz/GOResults.html)
 
 - 11 - apposition of dorsal and ventral imaginal disc-derived wing surfaces, sarcomere organization, proton transmembrane transport	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/j6uasu8e/GOResults.html)
 - 27 - anatomical structure morphogenesis, developmental process	[Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/2nnwdok2/GOResults.html)
