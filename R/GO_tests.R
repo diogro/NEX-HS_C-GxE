@@ -100,7 +100,9 @@ plot_grid(plotlist = llply(en_head$CP[getChild("1-1", en_head$summary)[c(-1)]], 
 
 
 cnetplot(en_head$CP$`9-4-0`)
-cnetplot(en_head$CP$`8-4-0`)
+cnetplot(en_head$CP$`1-1-1-1`)
+
+cnetplot(en_head$CP$`30-2-2-1`)
 
 cnetplot(en_head$WGCNA[[7]])
 dotplot(en_head$WGCNA[[5]])
