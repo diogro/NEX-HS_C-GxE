@@ -177,7 +177,7 @@ Overall: [Gorilla 4-3-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/biznpxxr/G
 - 5 - protein catabolic process, proteasome-mediated ubiquitin-dependent protein catabolic process, mRNA splicing [Gorilla](http://cbl-gorilla.cs.technion.ac.il/GOrilla/ocor5ovg/GOResults.html)
 - 50 - superoxide metabolic process (weak) [Gorilla](http://cbl-gorilla.cs.technion.ac.il/servlet/GOrilla?id=1tkubwji)
 
-### Translation (and some weird misc)
+### Transcription (and some weird misc)
 
 ```{r, echo=FALSE}
 XGR_plot("3-3-0", en_head$XGR, en_head$summary)
