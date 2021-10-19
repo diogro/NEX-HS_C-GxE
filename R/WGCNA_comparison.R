@@ -76,13 +76,15 @@ plot = WGCNA_HSBM %>%
   theme_cowplot() + background_grid() + labs(y = "WGCNA Modules", x = "SBM\nLevel-2 blocks") +
   scale_color_discrete(name = "SBM\nLevel-3") + theme(legend.position = "bottom")
 plot
+
+
 save_plot("data/output/SBM/plots/WGCNA_comparison.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
 save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures//WGCNA_comparison.png", plot, base_height = 5, ncol = 2, base_asp = 1.2)
 
 
 for(t in unique(WGCNA_HSBM$tissue)){
   fdr = c("body"= 5, "head"=4)
-  out_dir = paste0("../data/output/SBM/clustering/", t, "_weights-spearman_fdr-1e-0", fdr[t],"_mcmc_mode_hierarchical-SBM_gene-blocks/WGCNA")
+  out_dir = paste0("data/output/SBM/clustering/", t, "_weights-spearman_fdr-1e-0", fdr[t],"_mcmc_mode_hierarchical-SBM_gene-blocks/WGCNA")
   if(dir.exists(out_dir)) {
     for(i in dir(out_dir, full.names = TRUE))
       file.remove(i)

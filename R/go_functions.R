@@ -9,19 +9,20 @@ library(ggrepel)
 #registerDoMC(8)
 library("AnnotationDbi")
 library("org.Dm.eg.db")
-
-flyGO = list("BP" = 1, "MF" = 2, "CC"= 3)
-flyGO[["BP"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOBP',
-                              RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
-flyGO[["MF"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOMF',
-                              RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
-flyGO[["CC"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOCC',
-                              RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
-saveRDS(flyGO, "org.Dm.egGO[MF-BP-CC].2021-09-27")
-flyGO = readRDS("org.Dm.egGO[MF-BP-CC].2021-09-27")
-
 #BiocManager::install("clusterProfiler")
 library(clusterProfiler)
+
+
+# flyGO = list("BP" = 1, "MF" = 2, "CC"= 3)
+# flyGO[["BP"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOBP',
+#                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
+# flyGO[["MF"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOMF',
+#                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
+# flyGO[["CC"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOCC',
+#                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
+# saveRDS(flyGO, "org.Dm.egGO[MF-BP-CC].2021-09-27")
+flyGO = readRDS("org.Dm.egGO[MF-BP-CC].2021-09-27")
+
 
 getLevel = function(x, n_levels = 4){
   x = gsub(".csv", "", x)
@@ -37,10 +38,15 @@ getChild = function(parent, b_df){
   c(parent, childs)
 }
 
-getGeneList = function(block_number, level, folder_path, file_name = NULL){
+getGeneList = function(block_number, level, folder_path, file_name = NULL, clustering){
   if(is.null(file_name)){
-    file_path = file.path(folder_path, paste0("Level_", level))
-    file = dir(file_path, pattern = paste0("^", block_number, "-"), full.names = T)
+    if(clustering == "SBM"){
+      file_path = file.path(folder_path, paste0("Level_", level))
+      file = dir(file_path, pattern = paste0("^", block_number, "-"), full.names = T)
+    } else if(clustering == "WGCNA"){
+      file_path = file.path(folder_path, "WGCNA")
+      file = dir(file_path, pattern = paste0("^wgcna_", block_number), full.names = T)
+    }
   } else{
     block_summary = read.csv(file.path(folder_path, "block_summary.csv"))
     n_level = max(block_summary$Nested_Level)
@@ -59,12 +65,14 @@ getGeneList = function(block_number, level, folder_path, file_name = NULL){
 }
 getEnrichment = function(block_number = NULL, level = NULL,
                          folder_path, file_name = NULL,
+                         clustering = c("SBM", "WGCNA"),
                          type = c("clusterProfiler", "XGR", "group"),
                          ont = c("BP", "MF", "CC"),
                          go_level = 3){
+  clustering = match.arg(clustering)
   type = match.arg(type)
   ont = match.arg(ont)
-  x = getGeneList(block_number, level, folder_path, file_name)
+  x = getGeneList(block_number, level, folder_path, file_name, clustering = clustering)
   if(type == "clusterProfiler")
     enGo = enrichGO(gene          = x$en$genes,
                     universe      = x$en$background,

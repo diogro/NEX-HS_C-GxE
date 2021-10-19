@@ -1,23 +1,28 @@
 source("R/go_functions.R")
 
-en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_mcmc_mode_hierarchical-SBM_gene-blocks")
-en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks")
-saveRDS(en_head, 'data/enGo_head.Rds')
-saveRDS(en_body, 'data/enGo_body.Rds')
+# en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_mcmc_mode_hierarchical-SBM_gene-blocks")
+# en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks")
+# en_head$WGCNA = llply(0:8, getEnrichment,
+#                       folder_path="data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_mcmc_mode_hierarchical-SBM_gene-blocks",
+#                       clustering = "WGCNA")
+# en_body$WGCNA = llply(0:9, getEnrichment,
+#                       folder_path="data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks",
+#                       clustering = "WGCNA")
+# saveRDS(en_head, 'data/enGo_head.Rds')
+# saveRDS(en_body, 'data/enGo_body.Rds')
 
-en_head_abs = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
-en_body_abs = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
-saveRDS(en_head_abs, 'data/enGo_head_abs.Rds')
-saveRDS(en_body_abs, 'data/enGo_body_abs.Rds')
+# en_head_abs = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
+# en_body_abs = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
+# saveRDS(en_head_abs, 'data/enGo_head_abs.Rds')
+# saveRDS(en_body_abs, 'data/enGo_body_abs.Rds')
 
 en_head = readRDS('data/enGo_head.Rds')
 en_body = readRDS('data/enGo_body.Rds')
 
 en_head_table = ldply(en_head$CP, function(x) x@result) %>% filter(p.adjust < 0.05, Count >= 4)
-write.csv(en_head_table, file  = "en_head.csv")
-en_body_table = ldply(en_body$CP, function(x) x@result) %>% filter(p.adjust < 0.05, Count >= 4)
-write.csv(en_body_table, file  = "en_body.csv")
-
+# write.csv(en_head_table, file  = "en_head.csv")
+# en_body_table = ldply(en_body$CP, function(x) x@result) %>% filter(p.adjust < 0.05, Count >= 4)
+# write.csv(en_body_table, file  = "en_body.csv")
 
 
 table_en = table(en_head_abs$summary$n_enrich[en_head_abs$summary$Nested_Level==1]!=0)
@@ -43,33 +48,6 @@ table_en = table(en_body$summary$n_enrich[en_body$summary$Nested_Level==2]!=0)
 table_en
 table_en/sum(table_en)
 
-ggplot(filter(block_summary, Nested_Level == 1), aes(Assortatitvity,
-                                                     -log2(p.adjust),
-                                                     color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
-ggplot(filter(block_summary, Nested_Level == 1), aes(N_genes, -log2(p.adjust), color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
-ggplot(filter(block_summary, Nested_Level == 1), aes(Assortatitvity, n_enrich, color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
-ggplot(filter(block_summary, Nested_Level == 1), aes(N_genes, n_enrich, color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
-ggplot(filter(block_summary, Nested_Level == 1), aes(Assortatitvity, n_enrich_simple, color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
-ggplot(filter(block_summary, Nested_Level == 1), aes(N_genes, n_enrich_simple, color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
-
-ggplot(filter(block_summary, Nested_Level == 2), aes(Assortatitvity, -log2(p.adjust), color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
-ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, -log2(p.adjust), color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
-ggplot(filter(block_summary, Nested_Level == 2), aes(Assortatitvity, n_enrich/N_genes, color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))+ geom_smooth(method = lm, color = "black")
-ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, n_enrich, color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
-ggplot(filter(block_summary, Nested_Level == 2), aes(Assortatitvity, n_enrich_simple, color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
-ggplot(filter(block_summary, Nested_Level == 2), aes(N_genes, n_enrich_simple, color = Parent)) +
-  geom_point() + geom_label_repel(aes(label = Block))
 
 goplot_list = llply(en_body$summary$Name[en_body$summary$Nested_Level==3],
                     XGR_plot, en_body$XGR, en_body$summary)
@@ -93,40 +71,55 @@ for(x in en_head$summary$Name[en_head$summary$Nested_Level==Level]){
   print(df)
 }
 
-CP_print("9-4-0", enGo = en_head$CP, en_head$summary)
-en_head$XGR$`1-1-1`
-XGR_plot(x = "12-0-0", enGo = en_head$XGR_CC, summary = en_head$summary)
-XGR_plot(x = "0-0-0", enGo = en_head$XGR_CC, summary = en_head$summary)
-save_plot("go_head_level_0-0-0-vision-neuro-signaling.png", XGR_plot("0-0-0", en_head$XGR, en_head$summary),
-          base_height = 7, base_asp = 0.25, ncol=5)
-XGR_plot(x = "0-0-0", enGo = en_head$XGR_CC, summary = en_head$summary)
-save_plot("go_head_level_0-0-high-level-neuro.png", XGR_plot("0-0", en_head$XGR, en_head$summary),
-          base_height = 7, base_asp = 0.25, ncol=5)
-save_plot("go_head_level_12-0-0-nueromuscular-signaling.png", XGR_plot("12-0-0", en_head$XGR, en_head$summary),
-          base_height = 7, base_asp = 0.25, ncol=5)
-save_plot("go_head_level_12-0-0-nueromuscular-signaling_cc.png", XGR_plot("12-0-0", en_head$XGR_CC, en_head$summary, "CC"),
-          base_height = 7, base_asp = 0.25, ncol=5)
 
-XGR_plot("0-0-0", en_head$XGR_CC, en_head$summary)
-save_plot("go_head_level_0-0-0-vision-neuro-signaling-CC.png", XGR_plot("0-0-0", en_head$XGR_CC, en_head$summary, "CC"), base_height = 7, base_asp = 0.25, ncol=5)
+wgcna_df =ldply(1:length(en_head$WGCNA), function(id){
+      x <- en_head$WGCNA[[id]];
+      dplyr::select(x@result, -geneID) %>%
+        filter(p.adjust < 0.05, Count >= 4) %>%
+        mutate(Module = id-1) %>%
+        select(Module, everything())
+})
+k = table(wgcna_df$ID, wgcna_df$Description)
+wgcna_df %>% filter(Module == 2) %>% select(Description, Count)
+wgcna_df %>% filter(grepl("synapse", Description)   )
+wgcna_df %>% filter(Module==4)
+
+inner_join(en_head_table  %>% filter(grepl("cytoplasmic translation", Description)) %>% select(-geneID) %>% rename(Name=.id),
+           en_head$summary, by="Name") %>% filter(Nested_Level == 1) %>% select(Name, ID, Assortatitvity, GeneRatio, p.adjust.x)
+
+ego =
+dotplot(ego, showCategory=30)
+dotplot(en_head$WGCNA[[5]], showCategory=30)
+names = getChild("0-0-0", en_head$summary)[-1]
+plot_000 = plot_grid(plotlist = llply(en_head$CP[names], cnetplot), ncol = 2, labels = names)
+save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/000_go_map.png", plot_000, base_height = 6, base_asp = 1.1, ncol = 2, nrow = 3)
+plot_grid(plotlist = llply(en_head$CP[getChild("12-0-0", en_head$summary)[c(-1, -3, -5)]], cnetplot))
+
+getChild("1-1", en_head$summary)[c(-1)]
+plot_grid(plotlist = llply(en_head$CP[getChild("1-1", en_head$summary)[c(-1)]], cnetplot))
 
 
-XGR_plot(x = "2-2-1", enGo = en_head$XGR, summary = en_head$summary)
-XGR_plot(x = "1-1-1", enGo = en_head$XGR_CC, summary = en_head$summary)
-save_plot("go_head_level_1-1-1-super_translation.png", XGR_plot("1-1-1", en_head$XGR, en_head$summary),
-          base_height = 7, base_asp = 0.25, ncol=5)
-save_plot("go_head_level_1-1-1-super_translation_CC.png", XGR_plot("1-1-1", en_head$XGR_CC, en_head$summary, "CC"),
-          base_height = 7, base_asp = 0.25, ncol=5)
+cnetplot(en_head$CP$`9-4-0`)
+cnetplot(en_head$CP$`8-4-0`)
 
-save_plot("go_head_level_6-1-1-less_translation.png", XGR_plot("6-1-1", en_head$XGR, en_head$summary),
-          base_height = 7, base_asp = 0.25, ncol=5)
-XGR_plot(x = "6-1-1", enGo = en_head$XGR_CC, summary = en_head$summary, "CC")
+cnetplot(en_head$WGCNA[[7]])
+dotplot(en_head$WGCNA[[5]])
 
-XGR_plot(x = "4-0", enGo = en_head$XGR, summary = en_head$summary)
-XGR_plot(x = "4-0", enGo = en_head$XGR_CC, summary = en_head$summary)
-save_plot("go_head_level_4-0-muscle-Krebs.png", XGR_plot("4-0", en_head$XGR, en_head$summary),
-          base_height = 7, base_asp = 0.25, ncol=5)
-save_plot("go_head_level_9-4-0-muscle-Krebs.png", XGR_plot("9-4-0", en_head$XGR, en_head$summary, fdr = 0.1),
-          base_height = 7, base_asp = 0.25, ncol=5)
-save_plot("go_head_level_1-1-1-super_translation_CC.png", XGR_plot("1-1-1", en_head$XGR_CC, en_head$summary, "CC"),
-          base_height = 7, base_asp = 0.25, ncol=5)
+?dotplot
+
+
+rbind(read_csv("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_mcmc_mode_hierarchical-SBM.csv") %>%
+  mutate(tissue = "head"),
+read_csv("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM.csv") %>%
+  mutate(tissue = "body")) %>% select(Gene, Degree, E_corr, B1:B4, tissue) %>%
+  write_csv("block_partition-HeadBody-Control.csv")
+
+
+bp2 <- clusterProfiler::simplify(en_head$WGCNA[[5]])
+cnetplot(clusterProfiler::simplify(en_head$WGCNA[[2]]))
+cnetplot(clusterProfiler::simplify(en_head$WGCNA[[3]]))
+cnetplot(clusterProfiler::simplify(en_head$WGCNA[[4]]))
+cnetplot(clusterProfiler::simplify(en_head$WGCNA[[5]]))
+cnetplot(clusterProfiler::simplify(en_head$WGCNA[[6]]))
+cnetplot(clusterProfiler::simplify(en_head$WGCNA[[7]]))
+

@@ -36,9 +36,12 @@ makeEmatrixPlots = function(header,
                             plot_path = "data/output/SBM/plots/",
                             levels = 5){
   block_df = read_csv(file.path(data_path, paste0(header, "_hierarchical-SBM.csv")))
-
+  block_summary = read_csv(file.path(data_path, paste0(header, "_hierarchical-SBM_gene-blocks/block_summary.csv"))) %>%
+    filter(Nested_Level == 1) %>% select(Block, Internal_degree, Assortatitvity) %>%
+    rename(B1 = Block)
+  block_df = inner_join(block_df, block_summary)
   block_df = block_df %>%
-    arrange(B6, B5, B4, B3, B2, B1, desc(Degree)) %>%
+    arrange(B6, B5, B4, B3, B2, desc(Assortatitvity)) %>%
     select(-1)
 
   e_mats = vector("list", levels)
@@ -86,7 +89,8 @@ out_fdr_0.4_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-04_mcmc_mode",
 out_fdr_0.5_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-05_mcmc_mode", levels = 4)
 
 
-plot = plot_grid(out_fdr_0.4_head$plot_list[[1]] + ggtitle("Head - SBM Level-1"),
-          out_fdr_0.5_body$plot_list[[1]] + ggtitle("Body - SBM Level-1"))
+plot = plot_grid(out_fdr_0.5_body$plot_list[[1]] + ggtitle("Body - SBM Level-1"),
+                 out_fdr_0.4_head$plot_list[[1]] + ggtitle("Head - SBM Level-1"))
+
 save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 10, ncol = 2, base_asp = 1.1)
 
