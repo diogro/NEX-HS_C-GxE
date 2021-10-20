@@ -154,18 +154,18 @@ makeEnrichment = function(block_path){
   block_summary$Parent = block_summary$Name %>%
     llply(strsplit, split="-") %>% sapply(`[[`, 1) %>% sapply(`[`, 2)
 
-  enGo_XGR = llply(block_summary$File,
-                   function(file)
-                     getEnrichment(file_name = file,
-                                   folder_path = block_path,
-                                   type = "XGR"))
-  names(enGo_XGR) = block_summary$Name
-  enGo_XGR_CC = llply(block_summary$File,
-                      function(file)
-                        getEnrichment(file_name = file,
-                                      folder_path = block_path,
-                                      type = "XGR", ont = "CC"))
-  names(enGo_XGR_CC) = block_summary$Name
+  # enGo_XGR = llply(block_summary$File,
+  #                  function(file)
+  #                    getEnrichment(file_name = file,
+  #                                  folder_path = block_path,
+  #                                  type = "XGR"))
+  # names(enGo_XGR) = block_summary$Name
+  # enGo_XGR_CC = llply(block_summary$File,
+  #                     function(file)
+  #                       getEnrichment(file_name = file,
+  #                                     folder_path = block_path,
+  #                                     type = "XGR", ont = "CC"))
+  # names(enGo_XGR_CC) = block_summary$Name
   enGo_CP = llply(block_summary$File,
                   function(file)
                     getEnrichment(file_name = file,
@@ -184,7 +184,8 @@ makeEnrichment = function(block_path){
                                           filter(p.adjust < 0.05, Count >= 4) %>% nrow)
   return(list(summary = block_summary,
               CP = enGo_CP,
-              CP_simple = enGo_CP_simple,
-              XGR = enGo_XGR,
-              XGR_CC = enGo_XGR_CC))
+              CP_simple = enGo_CP_simple
+              # XGR = enGo_XGR,
+              # XGR_CC = enGo_XGR_CC
+              ))
 }

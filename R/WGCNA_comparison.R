@@ -6,8 +6,6 @@ library(tidyverse)
 library(cowplot)
 library(patchwork)
 library(psych)
-if(!require(doMC)){install.packages("doMC"); library(doMC)}
-registerDoMC(8)
 
 if(!require(WGCNA)){BiocManager::install("WGCNA"); library(WGCNA)}
 if(!require(tictoc)){install.packages("tictoc"); library(tictoc)}
