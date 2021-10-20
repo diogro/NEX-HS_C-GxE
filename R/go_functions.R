@@ -1,4 +1,3 @@
-# BiocManager::install("org.Dm.eg.db")
 # BiocManager::install("hfang-bristol/XGR", dependencies=T)
 
 library(XGR)
@@ -7,10 +6,15 @@ library(cowplot)
 library(ggrepel)
 #library(doMC)
 #registerDoMC(8)
-library("AnnotationDbi")
-library("org.Dm.eg.db")
+library(tidyverse)
+
+library(AnnotationDbi)
+# BiocManager::install("org.Dm.eg.db")
+library(org.Dm.eg.db)
 #BiocManager::install("clusterProfiler")
 library(clusterProfiler)
+library(ggnewscale)
+library(enrichplot)
 
 
 # flyGO = list("BP" = 1, "MF" = 2, "CC"= 3)
