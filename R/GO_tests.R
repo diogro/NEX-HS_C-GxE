@@ -8,8 +8,8 @@ source("R/go_functions.R")
 # en_body$WGCNA = llply(0:9, getEnrichment,
 #                       folder_path="data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks",
 #                       clustering = "WGCNA")
-saveRDS(en_head, 'data/enGo_head.Rds')
-saveRDS(en_body, 'data/enGo_body.Rds')
+# saveRDS(en_head, 'data/enGo_head.Rds')
+# saveRDS(en_body, 'data/enGo_body.Rds')
 
 # en_head_abs = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_body_abs = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")

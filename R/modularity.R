@@ -28,10 +28,10 @@ p_head = x %>%
   mutate(Block = factor(Block, levels = x$Block[order(x$Assortatitvity)])) %>%
   ggplot(aes(x=Block, y=Assortatitvity, color = is_enriched)) +
     geom_point(size = 3) + scale_color_colorblind(name = "GO Enriched") +
-    geom_segment(size = 1, aes(x=Block, xend=Block, y=0, yend=Assortatitvity)) + 
-    theme_cowplot() + geom_hline(yintercept = 0) + theme(legend.position = "none") + 
-    theme(axis.text.x = element_text(angle=45, vjust=0.6)) + 
-    labs(x = "Level 1 Block", y = "Assortativity") 
+    geom_segment(size = 1, aes(x=Block, xend=Block, y=0, yend=Assortatitvity)) +
+    theme_cowplot() + geom_hline(yintercept = 0) + theme(legend.position = "none") +
+    theme(axis.text.x = element_text(angle=45, vjust=0.6)) +
+    labs(x = "Level 1 Block", y = "Assortativity")
 
 
 x = en_body$summary %>% filter(Nested_Level == 1) %>% mutate(is_enriched = n_enrich > 0)
@@ -40,25 +40,25 @@ p_body = x %>%
   ggplot(aes(x=Block, y=Assortatitvity, color = is_enriched)) +
     geom_point(size = 3) + scale_color_colorblind(name = "GO Enriched") +
     geom_segment(size = 1, aes(x=Block, xend=Block, y=0, yend=Assortatitvity)) +
-    theme_cowplot() + geom_hline(yintercept = 0) + 
-    theme(legend.position = c(0.7, 0.9)) + 
-    theme(axis.text.x = element_text(angle=45, vjust=0.6)) + 
-    labs(x = "Level 1 Block", y = "Assortativity") 
+    theme_cowplot() + geom_hline(yintercept = 0) +
+    theme(legend.position = c(0.7, 0.9)) +
+    theme(axis.text.x = element_text(angle=45, vjust=0.6)) +
+    labs(x = "Level 1 Block", y = "Assortativity")
 
 
 x = en_head$summary %>%
   group_by(Nested_Level) %>%
-  summarise(mean(Assortatitvity)) 
+  summarise(mean(Assortatitvity))
 names(x) = c("Level", "Modularity")
-mod_head = ggplot(x, aes(Level, Modularity)) + geom_point() + 
-  geom_line() + theme_cowplot() + background_grid() + labs(x = "Nested Block Level") 
+mod_head = ggplot(x, aes(Level, Modularity)) + geom_point() +
+  geom_line() + theme_cowplot() + background_grid() + labs(x = "Nested Block Level")
 
 x = en_body$summary %>%
   group_by(Nested_Level) %>%
-  summarise(mean(Assortatitvity)) 
+  summarise(mean(Assortatitvity))
 names(x) = c("Level", "Modularity")
-mod_body = ggplot(x, aes(Level, Modularity)) + geom_point() + 
-  geom_line() + theme_cowplot() + background_grid() + labs(x = "Nested Block Level") 
+mod_body = ggplot(x, aes(Level, Modularity)) + geom_point() +
+  geom_line() + theme_cowplot() + background_grid() + labs(x = "Nested Block Level")
 
 
 pb = ggdraw(p_body) +
@@ -68,5 +68,5 @@ ph = ggdraw(p_head) +
 
 plot = plot_grid(pb, ph, ncol  = 1, labels = c("A. Body", "B. Head"), scale = 0.9)
 plot
-save_plot("g:Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures//assortativity.png", 
+save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures//assortativity.png",
           plot, base_height = 5, ncol = 1, nrow = 2, base_asp = 3.5, )
