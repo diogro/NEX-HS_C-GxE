@@ -36,9 +36,12 @@ makeEmatrixPlots = function(header,
                             plot_path = "data/output/SBM/plots/",
                             levels = 5){
   block_df = read_csv(file.path(data_path, paste0(header, "_hierarchical-SBM.csv")))
-
+  block_summary = read_csv(file.path(data_path, paste0(header, "_hierarchical-SBM_gene-blocks/block_summary.csv"))) %>%
+    filter(Nested_Level == 1) %>% select(Block, Internal_degree, Assortatitvity) %>%
+    rename(B1 = Block)
+  block_df = inner_join(block_df, block_summary)
   block_df = block_df %>%
-    arrange(B6, B5, B4, B3, B2, B1, desc(Degree)) %>%
+    arrange(B6, B5, B4, B3, B2, desc(Assortatitvity)) %>%
     select(-1)
 
   e_mats = vector("list", levels)
@@ -61,13 +64,13 @@ makeEmatrixPlots = function(header,
     #plot heatmap
     plot = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
       geom_tile() +
-      scale_fill_viridis_c(alpha = 1)  + theme_tufte() +
+      scale_fill_viridis_c(alpha = 1)  + theme_cowplot() +
       labs(y = "Blocks", x = "Blocks") + ggtitle(paste("Level", level)) +
       theme(axis.text.x = element_text(angle=45, vjust=0.6), legend.position = "none")
     if(level < levels){
       for(i in level:(levels-1)){
         b_size_df = getBlockSizedf(i, block_df, all = TRUE, level)
-        plot = plot + geom_rect(data = b_size_df, color = "tomato3", alpha = 0,
+        plot = plot + geom_rect(data = b_size_df, color = "tomato3", alpha = 0, size = 1,
                                 aes(x = NULL, y = NULL, fill = NULL, xmin=start, xmax=end,
                                     ymin=start, ymax=end))
       }
@@ -79,10 +82,15 @@ makeEmatrixPlots = function(header,
   all_plots = plot_grid(plotlist = plot_list)
   save_plot(file.path(plot_path, paste0(header, "_E_matrices.png")), all_plots,
             base_height = 10, base_asp = 1.2, ncol = 3, nrow = 2)
-  return(list(df = block_df, E = e_mats, plots = all_plots))
+  return(list(df = block_df, E = e_mats, plots = all_plots, plot_list = plot_list))
 }
 
-out_fdr_0.5_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-06_mcmc_mode", levels = 4)
-out_fdr_0.5_head$plots
-out_fdr_0.5_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-06_mcmc_mode", levels = 4)
-out_fdr_0.5_body$plots
+out_fdr_0.4_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-04_mcmc_mode", levels = 4)
+out_fdr_0.5_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-05_mcmc_mode", levels = 4)
+
+
+plot = plot_grid(out_fdr_0.5_body$plot_list[[1]] + ggtitle("Body - SBM Level-1"),
+                 out_fdr_0.4_head$plot_list[[1]] + ggtitle("Head - SBM Level-1"))
+
+save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 10, ncol = 2, base_asp = 1.1)
+

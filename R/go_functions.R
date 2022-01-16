@@ -1,4 +1,3 @@
-# BiocManager::install("org.Dm.eg.db")
 # BiocManager::install("hfang-bristol/XGR", dependencies=T)
 
 library(XGR)
@@ -7,21 +6,27 @@ library(cowplot)
 library(ggrepel)
 #library(doMC)
 #registerDoMC(8)
-library("AnnotationDbi")
-library("org.Dm.eg.db")
+library(tidyverse)
 
-flyGO = list("BP" = 1, "MF" = 2, "CC"= 3)
-flyGO[["BP"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOBP',
-                              RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
-flyGO[["MF"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOMF',
-                              RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
-flyGO[["CC"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOCC',
-                              RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
-saveRDS(flyGO, "org.Dm.egGO[MF-BP-CC].2021-09-27")
-flyGO = readRDS("org.Dm.egGO[MF-BP-CC].2021-09-27")
-
+library(AnnotationDbi)
+# BiocManager::install("org.Dm.eg.db")
+library(org.Dm.eg.db)
 #BiocManager::install("clusterProfiler")
 library(clusterProfiler)
+library(ggnewscale)
+library(enrichplot)
+
+
+# flyGO = list("BP" = 1, "MF" = 2, "CC"= 3)
+# flyGO[["BP"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOBP',
+#                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
+# flyGO[["MF"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOMF',
+#                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
+# flyGO[["CC"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOCC',
+#                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
+# saveRDS(flyGO, "org.Dm.egGO[MF-BP-CC].2021-09-27")
+flyGO = readRDS("org.Dm.egGO[MF-BP-CC].2021-09-27")
+
 
 getLevel = function(x, n_levels = 4){
   x = gsub(".csv", "", x)
@@ -37,10 +42,15 @@ getChild = function(parent, b_df){
   c(parent, childs)
 }
 
-getGeneList = function(block_number, level, folder_path, file_name = NULL){
+getGeneList = function(block_number, level, folder_path, file_name = NULL, clustering){
   if(is.null(file_name)){
-    file_path = file.path(folder_path, paste0("Level_", level))
-    file = dir(file_path, pattern = paste0("^", block_number, "-"), full.names = T)
+    if(clustering == "SBM"){
+      file_path = file.path(folder_path, paste0("Level_", level))
+      file = dir(file_path, pattern = paste0("^", block_number, "-"), full.names = T)
+    } else if(clustering == "WGCNA"){
+      file_path = file.path(folder_path, "WGCNA")
+      file = dir(file_path, pattern = paste0("^wgcna_", block_number), full.names = T)
+    }
   } else{
     block_summary = read.csv(file.path(folder_path, "block_summary.csv"))
     n_level = max(block_summary$Nested_Level)
@@ -59,12 +69,14 @@ getGeneList = function(block_number, level, folder_path, file_name = NULL){
 }
 getEnrichment = function(block_number = NULL, level = NULL,
                          folder_path, file_name = NULL,
+                         clustering = c("SBM", "WGCNA"),
                          type = c("clusterProfiler", "XGR", "group"),
                          ont = c("BP", "MF", "CC"),
                          go_level = 3){
+  clustering = match.arg(clustering)
   type = match.arg(type)
   ont = match.arg(ont)
-  x = getGeneList(block_number, level, folder_path, file_name)
+  x = getGeneList(block_number, level, folder_path, file_name, clustering = clustering)
   if(type == "clusterProfiler")
     enGo = enrichGO(gene          = x$en$genes,
                     universe      = x$en$background,
@@ -113,7 +125,7 @@ CP_plot = function(x, enGo_CP_simple, summary){
   if(length(l) > 2){
     print(x)
     df = ldply(l, function(x) dplyr::select(x@result, -geneID), .id = "Block") %>%
-      filter(p.adjust < 0.05)
+      filter(p.adjust < 0.05, count >= 5)
     goplot <- df %>%
       ggplot(aes(Description, -log2(p.adjust))) +
       geom_bar(stat="identity")  + coord_flip()
@@ -146,18 +158,18 @@ makeEnrichment = function(block_path){
   block_summary$Parent = block_summary$Name %>%
     llply(strsplit, split="-") %>% sapply(`[[`, 1) %>% sapply(`[`, 2)
 
-  enGo_XGR = llply(block_summary$File,
-                   function(file)
-                     getEnrichment(file_name = file,
-                                   folder_path = block_path,
-                                   type = "XGR"))
-  names(enGo_XGR) = block_summary$Name
-  enGo_XGR_CC = llply(block_summary$File,
-                      function(file)
-                        getEnrichment(file_name = file,
-                                      folder_path = block_path,
-                                      type = "XGR", ont = "CC"))
-  names(enGo_XGR_CC) = block_summary$Name
+  # enGo_XGR = llply(block_summary$File,
+  #                  function(file)
+  #                    getEnrichment(file_name = file,
+  #                                  folder_path = block_path,
+  #                                  type = "XGR"))
+  # names(enGo_XGR) = block_summary$Name
+  # enGo_XGR_CC = llply(block_summary$File,
+  #                     function(file)
+  #                       getEnrichment(file_name = file,
+  #                                     folder_path = block_path,
+  #                                     type = "XGR", ont = "CC"))
+  # names(enGo_XGR_CC) = block_summary$Name
   enGo_CP = llply(block_summary$File,
                   function(file)
                     getEnrichment(file_name = file,
@@ -169,14 +181,15 @@ makeEnrichment = function(block_path){
 
   block_summary$p.adjust = laply(enGo_CP, function(x) dplyr::select(x@result, p.adjust)[1,])
   block_summary$n_enrich = laply(enGo_CP,
-                                 function(x) dplyr::select(x@result, p.adjust) %>%
-                                   filter(p.adjust < 0.05) %>% nrow)
+                                 function(x) dplyr::select(x@result, p.adjust, Count) %>%
+                                   filter(p.adjust < 0.05, Count >= 4) %>% nrow)
   block_summary$n_enrich_simple = laply(enGo_CP_simple,
-                                        function(x) dplyr::select(x@result, p.adjust) %>%
-                                          filter(p.adjust < 0.05) %>% nrow)
+                                        function(x) dplyr::select(x@result, p.adjust, Count) %>%
+                                          filter(p.adjust < 0.05, Count >= 4) %>% nrow)
   return(list(summary = block_summary,
               CP = enGo_CP,
-              CP_simple = enGo_CP_simple,
-              XGR = enGo_XGR,
-              XGR_CC = enGo_XGR_CC))
+              CP_simple = enGo_CP_simple
+              # XGR = enGo_XGR,
+              # XGR_CC = enGo_XGR_CC
+              ))
 }
