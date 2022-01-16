@@ -25,7 +25,7 @@ library(enrichplot)
 # flyGO[["CC"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOCC',
 #                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
 # saveRDS(flyGO, "org.Dm.egGO[MF-BP-CC].2021-09-27")
-flyGO = readRDS("org.Dm.egGO[MF-BP-CC].2021-09-27")
+flyGO = readRDS(here::here("R/org.Dm.egGO[MF-BP-CC].2022-01-16"))
 
 
 getLevel = function(x, n_levels = 4){

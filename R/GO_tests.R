@@ -1,4 +1,4 @@
-source("R/go_functions.R")
+source(here::here("R/go_functions.R"))
 
 # en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks")
@@ -16,15 +16,15 @@ source("R/go_functions.R")
 # saveRDS(en_head_abs, 'data/enGo_head_abs.Rds')
 # saveRDS(en_body_abs, 'data/enGo_body_abs.Rds')
 
-en_head = readRDS('data/enGo_head.Rds')
-en_body = readRDS('data/enGo_body.Rds')
+en_head = readRDS(here::here('data/enGo_head_fdr-1e-02.Rds'))
+en_body = readRDS(here::here('data/enGo_body_fdr-1e-03.Rds'))
 
 en_head_table = ldply(en_head$CP, function(x) x@result) %>%
   filter(p.adjust < 0.05, Count >= 4) %>% rename(Name = .id)
-write.csv(en_head_table, file  = "en_head.csv")
+write.csv(en_head_table, file = here::here("data/output/SBM/GO/GOenrichment_head_fdr-1e-02.csv"))
 en_body_table = ldply(en_body$CP, function(x) x@result) %>%
   filter(p.adjust < 0.05, Count >= 4) %>% rename(Name = .id)
-write.csv(en_body_table, file  = "en_body.csv")
+write.csv(en_body_table, file = here::here("data/output/SBM/GO/GOenrichment_body_fdr-1e-03.csv"))
 
 
 table_en = table(en_head_abs$summary$n_enrich[en_head_abs$summary$Nested_Level==1]!=0)

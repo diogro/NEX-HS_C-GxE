@@ -168,3 +168,4 @@ data
 .snakemake
 
 R/cache
+pymmc-pipeline
