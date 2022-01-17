@@ -55,6 +55,6 @@ if __name__ == '__main__':
 
     logging.info("Saving blockstate...")
     block_state = state_min.get_bs()
-    with open(snakemake.output[0], 'wb') as fh:
+    with open(snakemake.output.blocks, 'wb') as fh:
         dill.dump(block_state, fh, recurse=True)
     logging.info("Done!")

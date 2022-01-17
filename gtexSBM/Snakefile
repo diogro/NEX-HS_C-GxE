@@ -10,7 +10,7 @@ rule all:
     resources: 
         tmpdir="/scratch/tmp"
     input:
-        expand("../data/output/SBM/gtex/MCMC/blocks/fdr-{fdr}/{tissue}.dill", 
+        expand("../data/output/SBM/gtex/MCMC/hist/fdr-{fdr}/{tissue}.dill", 
                fdr = config["fdr"], 
                tissue=sample_pfxes)
 
@@ -61,7 +61,7 @@ rule annealing:
         graph="../data/output/SBM/gtex/trimmed_graph/fdr-{fdr}/{tissue}.xml.gz",
         blocks="../data/output/SBM/gtex/initialBlock/fdr-{fdr}/{tissue}.dill"
     output:
-        "../data/output/SBM/gtex/annealedBlock/fdr-{fdr}/{tissue}.dill" 
+        blocks="../data/output/SBM/gtex/annealedBlock/fdr-{fdr}/{tissue}.dill" 
     log: 
         "logs/annealedBlock/fdr-{fdr}/{tissue}.log"
     script:
@@ -75,7 +75,7 @@ rule equilibrate:
         graph="../data/output/SBM/gtex/trimmed_graph/fdr-{fdr}/{tissue}.xml.gz",
         blocks="../data/output/SBM/gtex/annealedBlock/fdr-{fdr}/{tissue}.dill"
     output:
-        "../data/output/SBM/gtex/equilibrate/fdr-{fdr}/{tissue}.dill"
+        blocks="../data/output/SBM/gtex/equilibrate/fdr-{fdr}/{tissue}.dill"
     log: 
         "logs/equilibrate/fdr-{fdr}/{tissue}.log"
     script:
