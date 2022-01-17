@@ -58,7 +58,7 @@ if __name__ == '__main__':
     # Now we collect the marginals for exactly 1000*10 sweeps
     S1 = state_min.entropy()
     mcmc_equilibrate(state_min, force_niter=1000, mcmc_args=dict(niter=10),
-                        callback=collect_partitions)
+                        callback=collect_partitions, verbose=True)
 
     pmode = PartitionModeState(bs, nested=True, converge=True)
     pv = pmode.get_marginal(g)

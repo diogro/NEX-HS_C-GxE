@@ -1,5 +1,5 @@
 import os
-os.environ["OMP_NUM_THREADS"] = "32"
+os.environ["OMP_NUM_THREADS"] = "8"
 
 from graph_tool.all import *
 import pandas as pd
