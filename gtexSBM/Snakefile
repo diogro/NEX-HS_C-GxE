@@ -90,7 +90,7 @@ rule MCMC:
         blocks="../data/output/SBM/gtex/equilibrate/fdr-{fdr}/{tissue}.dill"
     output:
         blocks="../data/output/SBM/gtex/MCMC/blocks/fdr-{fdr}/{tissue}.dill",
-        hist="../data/output/SBM/gtex/MCMC/hist/fdr-{fdr}/{tissue}.dill",
+        hist="../data/output/SBM/gtex/MCMC/hist/fdr-{fdr}/{tissue}.dill"
     log: 
         "logs/MCMC/fdr-{fdr}/{tissue}.log"
     script:
