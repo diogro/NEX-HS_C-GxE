@@ -28,7 +28,7 @@ library(enrichplot)
 flyGO = readRDS("org.Dm.egGO[MF-BP-CC].2021-09-27")
 
 
-getLevel = function(x, n_levels = 4){
+getLevel = function(x, n_levels = 5){
   x = gsub(".csv", "", x)
   x = gsub("/", "", x)
   n_levels - length(strsplit(x, "-")[[1]]) + 1
