@@ -165,4 +165,7 @@ data
 
 .DS_Store
 
+.snakemake
 
+R/cache
+pymmc-pipeline

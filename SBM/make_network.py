@@ -25,9 +25,6 @@ if __name__ == '__main__':
             help=('Path to the covfree expression data.'))
     parser.add_argument('--out', required=True,
             help=('Path to the output graph file.'))
-    parser.add_argument('--tissue', required=True,
-            choices=('head', 'body'),
-            help='Tissue name.')
     
     args = parser.parse_args()
     
@@ -51,9 +48,6 @@ if __name__ == '__main__':
     g = Graph(directed=False)
     g.add_vertex(n = n_genes)
 
-    pcor = g.new_ep("double", 0)
-    corr = g.new_ep("double", 0)
-    pearson = g.new_ep("double", 0)
     spearman = g.new_ep("double", 0)
     pval = g.new_ep("double", 0)
     genes = g.new_vertex_property("string", np.array(np.array(gene_expr.columns, dtype = "str")))
@@ -61,20 +55,13 @@ if __name__ == '__main__':
 
     for i in range(n_genes):
         for j in range(i):
-            pearson_r = sp.stats.pearsonr(X_centered.iloc[:,i], X_centered.iloc[:,j])
             spearman_r = sp.stats.spearmanr(X_centered.iloc[:,i], X_centered.iloc[:,j])
             g.add_edge(i, j)
             e = g.edge(i, j)
-            pcor[e] = -gene_expr_OAS_corr.precision_[i, j]/np.sqrt(gene_expr_OAS_corr.precision_[i, i]*gene_expr_OAS_corr.precision_[j, j])
-            corr[e] = gene_expr_OAS_corr.covariance_[i, j]/np.sqrt(gene_expr_OAS_corr.covariance_[i, i]*gene_expr_OAS_corr.covariance_[j, j])
-            pearson[e] = pearson_r[0]
             pval[e] = spearman_r[1]
             spearman[e] = spearman_r[0]
 
-    g.edge_properties["correlation"] = corr
-    g.edge_properties["precision"] = pcor
     g.edge_properties["pvalue"] = pval
-    g.edge_properties["pearson"] = pearson
     g.edge_properties["spearman"] = spearman
 
     g.save(args.out)

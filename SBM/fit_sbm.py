@@ -67,17 +67,9 @@ def run_non_nested_SBM(g, corr, args):
 def run_nested_SBM(g, corr, args, blocks=None):
 
     print("Creating nested model...")
-    if args.layer is True:
-        state_min = minimize_nested_blockmodel_dl(g, init_bs=blocks, 
-                                                  state_args=dict(base_type=LayeredBlockState,
-                                                                  ec=g.ep.layer,
-                                                                  layers=True,
-                                                                  recs=[g.ep.z_s],
-                                                                  rec_types=["real-normal"]))
-    else:
-        state_min = minimize_nested_blockmodel_dl(g, init_bs=blocks, 
-                                                  state_args=dict(recs=[g.ep.z_s],
-                                                                  rec_types=["real-normal"]))
+    state_min = minimize_nested_blockmodel_dl(g, init_bs=blocks,
+                                              state_args=dict(recs=[g.ep.z_s],
+                                                              rec_types=["real-normal"]))
 
 
     initial_entropy = state_min.entropy()
@@ -86,8 +78,8 @@ def run_nested_SBM(g, corr, args, blocks=None):
     if args.annealing > 0:
         S1 = state_min.entropy()
         print("Starting annealing...")
-        mcmc_anneal(state_min, beta_range=(1, 10), niter=args.annealing, 
-                    mcmc_equilibrate_args=dict(force_niter=10))
+        mcmc_anneal(state_min, beta_range=(1, 10), niter=args.annealing,
+                    mcmc_equilibrate_args=dict(force_niter=100))
         S2 = state_min.entropy()
         print("Improvement from annealing:", S2 - S1)
         print("Final entropy after annealing: " + str(state_min.entropy()))
@@ -136,7 +128,7 @@ def run_nested_SBM(g, corr, args, blocks=None):
                 B = sl.get_nonempty_B()
                 h[l][B] += 1
 
-        print("Starting MCMC.")
+        print("Starting MCMC...")
         # Now we collect the marginals for exactly args.iter*10 sweeps
         mcmc_equilibrate(state_min, force_niter=args.iter, mcmc_args=dict(niter=10),
                          callback=collect_partitions)
@@ -149,7 +141,7 @@ def run_nested_SBM(g, corr, args, blocks=None):
 
         state = state_min.copy(bs=bs_max)
 
-        print("Description lenght improvement in mcmc: " + str(state_min.entropy() - state.entropy()))
+        print("Description lenght improvement in MCMC: " + str(state_min.entropy() - state.entropy()))
         print("Final entropy after MCMC: " + str(state.entropy()))
 
         plot_file = out_folder + "plots/graph_plot_" + out_label + "_mcmc_mode_clustered-hierarchical-SBM.png"
@@ -194,14 +186,13 @@ if __name__ == '__main__':
     parser.add_argument('--output', required=True,
             help=('Output label.'))
     parser.add_argument('--tissue', required=True,
-            choices=('head', 'body'),
             help='Tissue being analysed.')
     parser.add_argument('--type',
             choices=('all', 'nested', 'non-nested', 'none'), default="nested",
             help='Type of SBM model.  Default nested.')
-    parser.add_argument('--layer', dest='layer', action='store_true')
-    parser.add_argument('--no-layer', dest='layer', action='store_false')
-    parser.set_defaults(layer=False)
+    parser.add_argument('--absolute', dest='abs', action='store_true')
+    parser.add_argument('--no-absolute', dest='abs', action='store_false')
+    parser.set_defaults(abs=False)
     parser.add_argument('--mcmc', dest='mcmc', action='store_true')
     parser.add_argument('--no-mcmc', dest='mcmc', action='store_false')
     parser.set_defaults(mcmc=False)
@@ -221,10 +212,10 @@ if __name__ == '__main__':
             bs = dill.load(fh)
 
     corr = g.edge_properties[args.correlation]
-    g.ep.positive = g.new_edge_property("int", (np.sign(corr.a) + 1)/2)
-    g.ep.layer = g.new_edge_property("int16_t", np.sign(corr.a).astype(np.int16))
-    g.ep.layer.a = np.sign(corr.a).astype(np.int16)
-    g.ep.z_s = g.new_edge_property("double", (2*np.arctanh(corr.a)))
+    if args.abs is True:
+        g.ep.z_s = g.new_edge_property("double", np.abs((2*np.arctanh(corr.a))))
+    else:
+        g.ep.z_s = g.new_edge_property("double", (2*np.arctanh(corr.a)))
 
     N = len(g.get_vertices())
     print("Genes: ", N)
@@ -235,10 +226,10 @@ if __name__ == '__main__':
     print("Min correlation: ", min(g.edge_properties[args.correlation].a))
     print("Max correlation: ", max(g.edge_properties[args.correlation].a))
 
-    out_folder = "../data/output/SBM/"
+    out_folder = "../data/output/SBM/gtex/"
     out_label = args.tissue + "_weights-" + args.correlation + "_" + args.output
-    if args.layer is True:
-        out_label = out_label + "_layered"
+    if args.abs is True:
+        out_label = out_label + "_absolute"
 
     print("Out file label: " + out_label)
 
