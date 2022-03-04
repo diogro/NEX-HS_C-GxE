@@ -8,7 +8,9 @@ library(tictoc)
 options(timeout = 1800)
 
 # Load metadata from recount3
-experimental_metadata_rc3 <- read_csv("~/projects/exp_var/recount3_metadata.csv")[1:17,]
+tissues = c("OVARY", "THYROID", "BRAIN", "TESTIS", "SPLEEN", "LIVER", "COLON", 
+"LUNG", "HEART", "MUSCLE")
+experimental_metadata_rc3 <- read_csv( "~/projects/exp_var/snakemake/metadata/recount3_metadata.csv") %>% filter(id %in% tissues)
 
 plots_dir <- here::here("R/plots/")
 
@@ -63,8 +65,8 @@ sbm_output = vector("list", length(results_list_gtex))
 names(sbm_output) = names(results_list_gtex)
 for(i in 1:length(sbm_output)){
   x = results_list_gtex[[i]]
-  sbm_output[[i]] = as_tibble(x$residuals_pc1) %>% 
-    dplyr::mutate(Gene = rownames(x$residuals_pc1)) %>% 
+  sbm_output[[i]] = as_tibble(x$residuals_noOut) %>% 
+    dplyr::mutate(Gene = rownames(x$residuals_noOut)) %>% 
     dplyr::select(Gene, everything())
 }
 laply(sbm_output, dim)
@@ -77,6 +79,6 @@ for(i in 1:length(sbm_output)){
   x = as.data.frame(sbm_output[[i]])
   rownames(x) = x$Gene
   x$Gene = NULL
-  write.table(x, file = file.path(csv_path, paste0(i, "_", name, ".csv")), sep = "\t")
+  write.table(x, file = file.path(csv_path, paste0(name, ".csv")), sep = "\t")
   print(name)
 }
