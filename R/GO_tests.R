@@ -1,15 +1,15 @@
 source(here::here("R/go_functions.R"))
 
-# en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_mcmc_mode_hierarchical-SBM_gene-blocks")
-# en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks")
+# en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks")
+# en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_head$WGCNA = llply(0:8, getEnrichment,
 #                       folder_path="data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_mcmc_mode_hierarchical-SBM_gene-blocks",
 #                       clustering = "WGCNA")
 # en_body$WGCNA = llply(0:9, getEnrichment,
 #                       folder_path="data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks",
 #                       clustering = "WGCNA")
-# saveRDS(en_head, 'data/enGo_head.Rds')
-# saveRDS(en_body, 'data/enGo_body.Rds')
+# saveRDS(en_head, here::here('data/enGo_head_fdr-1e-02.Rds'))
+# saveRDS(en_body, here::here('data/enGo_body_fdr-1e-03.Rds'))
 
 # en_head_abs = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_body_abs = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
@@ -26,10 +26,10 @@ en_body_table = ldply(en_body$CP, function(x) x@result) %>%
   filter(p.adjust < 0.05, Count >= 4) %>% rename(Name = .id)
 write.csv(en_body_table, file = here::here("data/output/SBM/GO/GOenrichment_body_fdr-1e-03.csv"))
 
+write.csv(en_head$summary, file = here::here("data/output/SBM/GO/Summary_head_fdr-1e-02.csv"))
+write.csv(en_body$summary, file = here::here("data/output/SBM/GO/Summary_body_fdr-1e-03.csv"))
 
-table_en = table(en_head_abs$summary$n_enrich[en_head_abs$summary$Nested_Level==1]!=0)
-table_en
-table_en/sum(table_en)
+
 
 table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==1]!=0)
 table_en
@@ -38,9 +38,6 @@ table_en/sum(table_en)
 table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==2]!=0)
 table_en
 table_en/sum(table_en)
-
-table_en = table(en_body_abs$summary$n_enrich[en_body_abs$summary$Nested_Level==1]!=0)
-table_en
 
 table_en = table(en_body$summary$n_enrich[en_body$summary$Nested_Level==1]!=0)
 table_en
@@ -85,10 +82,26 @@ wgcna_df %>% filter(Module==4)
 
 translate_head = inner_join(en_head_table  %>% filter(grepl("cytoplasmic translation", Description)) %>%
                               select(-geneID, -pvalue),
-           en_head$summary, by="Name") %>% filter(Nested_Level == 1)
+           en_head$summary, by="Name") %>% filter(Nested_Level == 2)
+neuro_head = inner_join(en_head_table  %>% filter(grepl("G protein-coupled receptor", Description)) %>%
+                              select(-geneID, -pvalue),
+                            en_head$summary, by="Name") %>% filter(Nested_Level == 2)
+
+inner_join(en_head_table %>%
+             select(-geneID, -pvalue),
+           en_head$summary, by="Name") %>% filter(Nested_Level == 2 & Block %in% c(5))
+
+inner_join(en_body_table %>%
+             select(-geneID, -pvalue),
+           en_body$summary, by="Name") %>% filter(Nested_Level == 2 & Block %in% c(12))
+
 translate_body = inner_join(en_body_table  %>% filter(grepl("cytoplasmic translation", Description)) %>%
                               select(-geneID, -pvalue),
-           en_body$summary, by="Name") %>% filter(Nested_Level == 1)
+           en_body$summary, by="Name") %>% filter(Nested_Level == 2)
+respiration_body = inner_join(en_body_table  %>% filter(grepl("fatty acid", Description)) %>%
+                              select(-geneID, -pvalue),
+                            en_body$summary, by="Name") %>% filter(Nested_Level == 2)
+
 mean(c(translate_head$Assortatitvity, translate_body$Assortatitvity))
 min(c(translate_head$Assortatitvity, translate_body$Assortatitvity))
 max(c(translate_head$Assortatitvity, translate_body$Assortatitvity))

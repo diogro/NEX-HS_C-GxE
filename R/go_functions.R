@@ -1,6 +1,6 @@
 # BiocManager::install("hfang-bristol/XGR", dependencies=T)
 
-library(XGR)
+#library(XGR)
 library(plyr)
 library(cowplot)
 library(ggrepel)
@@ -25,10 +25,10 @@ library(enrichplot)
 # flyGO[["CC"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOCC',
 #                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
 # saveRDS(flyGO, "org.Dm.egGO[MF-BP-CC].2021-09-27")
-flyGO = readRDS(here::here("R/org.Dm.egGO[MF-BP-CC].2022-01-16"))
+# flyGO = readRDS(here::here("R/org.Dm.egGO[MF-BP-CC].2022-01-16"))
 
 
-getLevel = function(x, n_levels = 4){
+getLevel = function(x, n_levels = 5){
   x = gsub(".csv", "", x)
   x = gsub("/", "", x)
   n_levels - length(strsplit(x, "-")[[1]]) + 1
