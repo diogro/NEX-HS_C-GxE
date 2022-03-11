@@ -188,6 +188,24 @@ empplot(enrichplot::pairwise_termsim(en_head$CP$`0-0-0-0`)))
 
 emplot = function(x) emapplot(enrichplot::pairwise_termsim(x))
 
-install.packages("remotes")
-remotes::install_github("GuangchuangYu/enrichplot")
+pak::pkg_install("GuangchuangYu/enrichplot")
 
+auto_barplot = function(x, en = en_head$CP){
+  x = en[[x]]
+  if(nrow(summary(x)) == 0) return(NULL)
+  current_go = clusterProfiler::simplify(x)
+  pairwise_go <- pairwise_termsim(current_go) 
+  barplot(pairwise_go)
+}
+
+level1 = getChild("6-0-0-0", en_head$summary)
+pl = llply(level1, auto_barplot, en_head$CP)
+plot_grid(plotlist = pl)
+
+level1 = getChild("3-1-2-1", en_head$summary)
+pl = llply(level1, auto_barplot, en_head$CP)
+plot_grid(plotlist = pl)
+
+level1 = getChild("8-4-1-1", en_head$summary)
+pl = llply(level1, auto_barplot, en_head$CP)
+plot_grid(plotlist = pl)
