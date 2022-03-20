@@ -215,6 +215,9 @@ plot_grid(plotlist = pl)
 head_non_assort = en_head$summary %>% 
   filter(Assortatitvity < 0 & n_enrich > 0)
 
+en_head_table %>%
+  filter(Name %in% head_non_assort$Name)
+
 pl = llply(head_non_assort$Name, auto_barplot, en_head$CP)
 p = plot_grid(plotlist = pl, labels = head_non_assort$Name)
 save_plot("head_non_assortative_options.png", p, ncol = 2, nrow = 2, base_height = 5)
