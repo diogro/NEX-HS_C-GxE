@@ -4,7 +4,7 @@ __default__:
     nodes: 1
     qos: 1month
     time: 30-00:00:00
-    cores: 8 #Request n cores be allocated per node.
+    cores: 16 #Request n cores be allocated per node.
     chdir: /Genomics/argo/users/damelo/projects/NEX-HS_C-GxE/gtexSBM
     output: logs/slurm/sbm_gtex-%j.out
     error: logs/slurm/sbm_gtex-%j.err

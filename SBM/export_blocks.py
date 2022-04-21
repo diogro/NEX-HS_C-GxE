@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     print("Creating gene lists...")
     n_levels = len(block_sizes)
-    output_df = pd.DataFrame(columns=('Nested_Level', 'Block', 'File', 'N_genes', 'Internal_degree', 'Assortatitvity'))
+    output_df = pd.DataFrame(columns=('Nested_Level', 'Block', 'File', 'N_genes', 'Internal_degree', 'Average_internal_degree', 'Total_degree', 'Average_total_degree' , 'Assortativity'))
     l = 0
     for i in range(n_levels):
         print("At level: " + str(i+1))
@@ -119,7 +119,8 @@ if __name__ == '__main__':
             file_name = "/" + '-'.join([str(num) for num in list(df.filter(like='B', axis=1).iloc[0,range(i, n_levels)])]) + ".csv"
 
             line.append(file_name)
-            line.append(genes.shape[0])
+            N_genes = genes.shape[0]
+            line.append(N_genes)
 
             ensure_dir(out_folder + "/Level_" + str(i+1))
             genes.to_csv(out_folder + "/Level_" + str(i+1) + file_name, header=False, index=False )
@@ -133,6 +134,9 @@ if __name__ == '__main__':
                 sys.error("q_r is larger than one.")
 
             line.append(ers[b,b])
+            line.append(ers[b,b] / N_genes)
+            line.append(ers[b,:].sum())
+            line.append(ers[b,:].sum() / N_genes)
             line.append(q_r)
 
             output_df.loc[l] = line

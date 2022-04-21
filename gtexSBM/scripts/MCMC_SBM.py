@@ -1,7 +1,7 @@
 import os
-os.environ["OMP_NUM_THREADS"] = '8' # export OMP_NUM_THREADS=4
-os.environ["OPENBLAS_NUM_THREADS"] = '8' # export OPENBLAS_NUM_THREADS=4
-os.environ["NUMEXPR_NUM_THREADS"] = '8' # export NUMEXPR_NUM_THREADS=6
+os.environ["OMP_NUM_THREADS"] = '16' # export OMP_NUM_THREADS=4
+os.environ["OPENBLAS_NUM_THREADS"] = '16' # export OPENBLAS_NUM_THREADS=4
+os.environ["NUMEXPR_NUM_THREADS"] = '16' # export NUMEXPR_NUM_THREADS=6
 
 import sys,os
 import logging, traceback
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     logging.info("Starting MCMC...")
     # Now we collect the marginals for exactly 1000*10 sweeps
     S1 = state_min.entropy()
-    mcmc_equilibrate(state_min, force_niter=1000, mcmc_args=dict(niter=10),
+    mcmc_equilibrate(state_min, force_niter=100, mcmc_args=dict(niter=10),
                         callback=collect_partitions, verbose=True)
 
     pmode = PartitionModeState(bs, nested=True, converge=True)
