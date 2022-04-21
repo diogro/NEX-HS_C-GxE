@@ -1,32 +1,14 @@
-# BiocManager::install("hfang-bristol/XGR", dependencies=T)
-
-#library(XGR)
+pak::pkg_install(c("ggrepel", "AnnotationDbi", "org.Dm.eg.db", "clusterProfiler", "ggnewscale", "enrichplot"))
 library(plyr)
 library(cowplot)
 library(ggrepel)
-#library(doMC)
-#registerDoMC(8)
 library(tidyverse)
 
 library(AnnotationDbi)
-# BiocManager::install("org.Dm.eg.db")
 library(org.Dm.eg.db)
-#BiocManager::install("clusterProfiler")
 library(clusterProfiler)
 library(ggnewscale)
 library(enrichplot)
-
-
-# flyGO = list("BP" = 1, "MF" = 2, "CC"= 3)
-# flyGO[["BP"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOBP',
-#                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
-# flyGO[["MF"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOMF',
-#                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
-# flyGO[["CC"]] <- xRDataLoader(RData.customised = 'org.Dm.egGOCC',
-#                               RData.location = "https://github.com/hfang-bristol/RDataCentre/blob/master/dnet/1.0.7")
-# saveRDS(flyGO, "org.Dm.egGO[MF-BP-CC].2021-09-27")
-# flyGO = readRDS(here::here("R/org.Dm.egGO[MF-BP-CC].2022-01-16"))
-
 
 getLevel = function(x, n_levels = 5){
   x = gsub(".csv", "", x)
