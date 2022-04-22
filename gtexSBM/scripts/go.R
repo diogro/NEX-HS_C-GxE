@@ -1,11 +1,27 @@
-source(here::here("gtexSBM/scripts/go_functions_gtex.R"))
-library(doMC)
-registerDoMC(32)
-go_set = makeEnrichment(block_path = here::here("data/output/SBM/gtex/blockSummary/fdr-1e-3/COLON"))
+my_logfile = snakemake@log[["log"]]
+snakemake@source("logger.R")
+log4r_info("Starting.")
+print = log4r_info
 
-table_en = table(go_set$summary$n_enrich[go_set$summary$Nested_Level==4]!=0)
-table_en
-table_en/sum(table_en)
+print("Loading packages and functions")
+snakemake@source("go_functions_gtex.R")
 
-x = go_set[[1]]
-names(x)
+print(paste("Data folder:", snakemake@params["blockDir"]))
+
+print("Running GO analysis")
+go_set = makeEnrichment(block_path = snakemake@params["blockDir"])
+#go_set = makeEnrichment(block_path = "../data/output/SBM/gtex/blockSummary/fdr-1e-3/LUNG")
+
+print("Writting GO object")
+saveRDS(go_set, file = snakemake@output[["GO"]])
+
+print("Writting block summary table")
+write.csv(go_set$summary, file = snakemake@output[["blockSummary"]])
+
+go_set_table = ldply(go_set$CP, function(x) x@result) %>%
+  filter(p.adjust < 0.05, Count >= 4) %>% rename(Name = .id)
+
+print("Writting GO table")
+write.csv(go_set_table, file = snakemake@output[["GOcsv"]])
+
+print("Done!")

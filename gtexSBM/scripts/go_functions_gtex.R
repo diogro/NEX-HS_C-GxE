@@ -113,8 +113,7 @@ makeEnrichment = function(block_path){
                                   folder_path = block_path,
                                   type = "clusterProfiler"),
                                   otherwise = NA)
-  enGo_CP = llply(block_summary$File, possGetEnrich, 
-                  .parallel = TRUE, .progress = "text")
+  enGo_CP = llply(block_summary$File, possGetEnrich, .progress = "text")
   names(enGo_CP) = block_summary$Name
 
   enGo_CP = enGo_CP[!is.na(enGo_CP)]
