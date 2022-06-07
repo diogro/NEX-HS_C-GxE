@@ -1,4 +1,6 @@
+pak::pkg_install("GuangchuangYu/enrichplot")
 source(here::here("R/go_functions.R"))
+
 
 # en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks")
@@ -29,6 +31,12 @@ write.csv(en_body_table, file = here::here("data/output/SBM/GO/GOenrichment_body
 write.csv(en_head$summary, file = here::here("data/output/SBM/GO/Summary_head_fdr-1e-02.csv"))
 write.csv(en_body$summary, file = here::here("data/output/SBM/GO/Summary_body_fdr-1e-03.csv"))
 
+en_body$summary %>%
+  filter(Nested_Level == 1) %>%
+  arrange(desc(N_genes)) %>% head()
+
+CP_print("8-7-2-0-0", en_body$CP, en_body$summary)
+CP_print("25-7-2-0-0", en_body$CP, en_body$summary)
 
 
 table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==1]!=0)
@@ -46,8 +54,6 @@ table_en/sum(table_en)
 table_en = table(en_body$summary$n_enrich[en_body$summary$Nested_Level==2]!=0)
 table_en
 table_en/sum(table_en)
-
-
 
 llply(en_body$summary$Name[en_body$summary$Nested_Level==2], CP_plot, en_body$CP, en_body$summary)
 
@@ -103,8 +109,8 @@ respiration_body = inner_join(en_body_table  %>% filter(grepl("fatty acid", Desc
                             en_body$summary, by="Name") %>% filter(Nested_Level == 2)
 
 mean(c(translate_head$Assortatitvity, translate_body$Assortatitvity))
-min(c(translate_head$Assortatitvity, translate_body$Assortatitvity))
-max(c(translate_head$Assortatitvity, translate_body$Assortatitvity))
+min( c(translate_head$Assortatitvity, translate_body$Assortatitvity))
+max( c(translate_head$Assortatitvity, translate_body$Assortatitvity))
 
 
 names_head = translate_head$Name
@@ -188,7 +194,6 @@ empplot(enrichplot::pairwise_termsim(en_head$CP$`0-0-0-0`)))
 
 emplot = function(x) emapplot(enrichplot::pairwise_termsim(x))
 
-pak::pkg_install("GuangchuangYu/enrichplot")
 
 auto_barplot = function(x, en = en_head$CP){
   x = en[[x]]
@@ -228,3 +233,119 @@ body_non_assort = en_body$summary %>%
 pl = llply(body_non_assort$Name, auto_barplot, en_body$CP)
 p = plot_grid(plotlist = pl, labels = body_non_assort$Name)
 save_plot("body_non_assortative_options.png", p, ncol = 3, nrow = 2, base_height = 5)
+
+
+
+### Hypergeometric test Assortativity and Cytoplasmic Translation
+# install.packages("ggpubr")
+library(ggpubr)
+
+# Body
+{
+translation_assortativity = inner_join(en_body_table  %>% 
+           mutate(Translation = grepl("cytoplasmic translation", Description) | grepl("^translation$", Description)) %>%
+           select(-geneID, -pvalue),
+           en_body$summary, by="Name") %>% 
+           filter(Nested_Level == 1) %>% 
+           select(Name, Assortatitvity, Translation) %>% 
+           unique()
+
+compare_means(Assortatitvity ~ Translation, data = translation_assortativity, method = "wilcox.test")
+
+my_comparisons <- list(c(1, 2))
+p <- ggboxplot(translation_assortativity, x = "Translation", y = "Assortatitvity",
+                    add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cytoplasmic translation")) +
+                    labs(x = "GO annotation")
+#  Add p-value
+p_body = p + 
+  stat_compare_means(label.y = 0.036, label.x = 0.7) + 
+  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test") +
+  ggtitle("A. Body")
+
+
+# Head
+translation_assortativity = inner_join(en_head_table  %>% 
+           mutate(Translation = grepl("cytoplasmic translation", Description) | grepl("^translation$", Description)) %>%
+           select(-geneID, -pvalue),
+           en_head$summary, by="Name") %>% 
+           filter(Nested_Level == 1) %>% 
+           select(Name, Assortatitvity, Translation) %>% 
+           unique()
+
+compare_means(Assortatitvity ~ Translation, data = translation_assortativity, method = "wilcox.test")
+
+my_comparisons <- list(c(1, 2))
+p <- ggboxplot(translation_assortativity, x = "Translation", y = "Assortatitvity",
+                    add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cytoplasmic translation")) +
+                    labs(x = "GO annotation")
+#  Add p-value
+p_head = p + 
+  stat_compare_means(label.y = 0.17, label.x = 0.7) + 
+  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test") +
+  ggtitle("B. Head")
+# Change method
+#p + stat_compare_means(method = "t.test")
+panel = p_body + p_head 
+save_plot("assortativity_cytoplasmic_translation.png", panel, base_height = 4, ncol = 2, base_asp = 1)
+}
+
+{
+translation_assortativity = inner_join(en_body_table  %>% 
+           mutate(Respiration = grepl("respiration", Description) | 
+                    grepl("ATP", Description) | 
+                    grepl("oxidative", Description) | 
+                    grepl("carboxylic", Description)) %>%
+           select(-geneID, -pvalue),
+           en_body$summary, by="Name") %>% 
+           filter(Nested_Level == 1) %>% 
+           select(Name, Assortatitvity, Respiration) %>% 
+           unique()
+
+compare_means(Assortatitvity ~ Respiration, data = translation_assortativity, method = "wilcox.test")
+
+my_comparisons <- list(c(1, 2))
+p <- ggboxplot(translation_assortativity, x = "Respiration", y = "Assortatitvity",
+                    add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cell Respiration")) +
+                    labs(x = "GO annotation")
+#  Add p-value
+p_body = p + 
+  stat_compare_means(label.y = 0.036, label.x = 0.7) + 
+  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test")
+
+
+inner_join(en_body_table  %>% 
+           filter((grepl("respiration", Description) | 
+                    grepl("ATP", Description) | 
+                    grepl("oxidative", Description) | 
+                    grepl("carboxylic", Description))) %>%
+           select(-geneID, -pvalue),
+           en_body$summary, by="Name") %>% 
+           filter(Nested_Level == 1) %>% 
+           select(Name, Description) 
+
+# Head
+translation_assortativity = inner_join(en_head_table  %>% 
+           mutate(Respiration = grepl("respiration", Description) | 
+                    grepl("ATP", Description) | 
+                    grepl("oxidative", Description) | 
+                    grepl("carboxylic", Description)) %>%
+           select(-geneID, -pvalue),
+           en_head$summary, by="Name") %>% 
+           filter(Nested_Level == 1) %>% 
+           select(Name, Assortatitvity, Respiration) %>% 
+           unique()
+
+compare_means(Assortatitvity ~ Respiration, data = translation_assortativity, method = "wilcox.test")
+
+my_comparisons <- list(c(1, 2))
+p <- ggboxplot(translation_assortativity, x = "Respiration", y = "Assortatitvity",
+                    add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cell Respiration")) +
+                    labs(x = "GO annotation")
+#  Add p-value
+p_head = p + 
+  stat_compare_means(label.y = 0.17, label.x = 0.7) + 
+  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test")
+# Change method
+panel = p_body + p_head 
+save_plot("assortativity_Respiration.png", panel, base_height = 4, ncol = 2, base_asp = 1)
+}
