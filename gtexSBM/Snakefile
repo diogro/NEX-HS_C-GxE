@@ -10,7 +10,7 @@ rule all:
     resources: 
         tmpdir="/scratch/tmp"
     input:
-        expand("../data/output/SBM/gtex/MCMC/hist/fdr-{fdr}/{tissue}.dill", 
+        expand("../data/output/SBM/gtex/GO/fdr-{fdr}/{tissue}/block_summary.csv", 
                fdr = config["fdr"], 
                tissue=sample_pfxes)
 
@@ -82,7 +82,7 @@ rule equilibrate:
         "scripts/equilibrateMCMC_SBM.py"
 
 rule MCMC:
-    threads: 8
+    threads: 16
     resources: 
         tmpdir="/scratch/tmp"
     input:
@@ -96,4 +96,38 @@ rule MCMC:
     script:
         "scripts/MCMC_SBM.py"
 
+rule exportBlocks:
+    threads: 16
+    resources: 
+        tmpdir="/scratch/tmp"
+    input:
+        graph="../data/output/SBM/gtex/trimmed_graph/fdr-{fdr}/{tissue}.xml.gz",
+        blocks="../data/output/SBM/gtex/MCMC/blocks/fdr-{fdr}/{tissue}.dill"
+    output:
+        blockSummary="../data/output/SBM/gtex/blockSummary/fdr-{fdr}/{tissue}/block_summary.csv",
+        blockDF="../data/output/SBM/gtex/blockSummary/fdr-{fdr}/{tissue}/gene_block.csv"
 
+    params:
+        blockDir = "../data/output/SBM/gtex/blockSummary/fdr-{fdr}/{tissue}"
+    log: 
+        "logs/exportBlocks/fdr-{fdr}/{tissue}.log"
+    script:
+        "scripts/exportBlocks.py"
+
+rule GO:
+    threads: 1
+    resources: 
+        tmpdir="/scratch/tmp"
+    input:
+        blockSummary="../data/output/SBM/gtex/blockSummary/fdr-{fdr}/{tissue}/block_summary.csv",
+        blockDF="../data/output/SBM/gtex/blockSummary/fdr-{fdr}/{tissue}/gene_block.csv"
+    output:
+        GO="../data/output/SBM/gtex/GO/fdr-{fdr}/{tissue}/GO.rds",
+        GOcsv="../data/output/SBM/gtex/GO/fdr-{fdr}/{tissue}/GO.csv",
+        blockSummary="../data/output/SBM/gtex/GO/fdr-{fdr}/{tissue}/block_summary.csv"
+    params:
+        blockDir = "../data/output/SBM/gtex/blockSummary/fdr-{fdr}/{tissue}"
+    log: 
+        log="logs/GO/fdr-{fdr}/{tissue}.log"
+    script:
+        "scripts/go.R"
