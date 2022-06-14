@@ -176,9 +176,9 @@ makeEnrichment = function(block_path){
               ))
 }
 
-go_plots = function(local_go_upper, ...){
+go_plots = function(local_go_upper, cats = 20, ...){
   pw_upper <- pairwise_termsim(local_go_upper) 
-  plot_upper <- emapplot(pw_upper, showCategory = 30, ...) + 
+  plot_upper <- emapplot(pw_upper, showCategory = cats, ...) + 
             theme_tufte() + 
             theme(legend.position = "none") + 
             theme(plot.title = element_text(size=28),
