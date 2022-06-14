@@ -4,15 +4,14 @@ source(here::here("R/go_functions.R"))
 
 # en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks")
-# en_head$WGCNA = llply(0:8, getEnrichment,
-#                       folder_path="data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_mcmc_mode_hierarchical-SBM_gene-blocks",
-#                       clustering = "WGCNA")
-# en_body$WGCNA = llply(0:9, getEnrichment,
-#                       folder_path="data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM_gene-blocks",
+# en_head$WGCNA = llply(0:7, getEnrichment,
+#                       folder_path="data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks",
+#                        clustering = "WGCNA")
+# en_body$WGCNA = llply(0:7, getEnrichment,
+#                       folder_path="data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks",
 #                       clustering = "WGCNA")
 # saveRDS(en_head, here::here('data/enGo_head_fdr-1e-02.Rds'))
 # saveRDS(en_body, here::here('data/enGo_body_fdr-1e-03.Rds'))
-
 # en_head_abs = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_body_abs = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
 # saveRDS(en_head_abs, 'data/enGo_head_abs.Rds')
@@ -35,7 +34,8 @@ en_body$summary %>%
   filter(Nested_Level == 1) %>%
   arrange(desc(N_genes)) %>% head()
 
-CP_print("8-7-2-0-0", en_body$CP, en_body$summary)
+CP_print("4-0-0", en_head$CP, en_head$summary) %>%
+  filter(Block == "4-0-0") 
 CP_print("25-7-2-0-0", en_body$CP, en_body$summary)
 
 
@@ -84,7 +84,14 @@ wgcna_df_head %>% filter(grepl("ATP", Description))
 cnetplot(en_head$WGCNA[[1]], node_label="category",showCategory = 10)
 cnetplot(en_body$WGCNA[[5]], node_label="category",showCategory = 10)
 
-wgcna_df %>% filter(Module==4)
+wgcna_df_head %>% filter(Module==2)
+
+wgcna_df_body %>%
+  group_by(Module) %>%
+  count()
+wgcna_df_head %>%
+  group_by(Module) %>%
+  count()
 
 translate_head = inner_join(en_head_table  %>% filter(grepl("cytoplasmic translation", Description)) %>%
                               select(-geneID, -pvalue),
@@ -135,10 +142,13 @@ save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/plot_11_1_
 translation_names = getChild("1-1-1", en_body$summary)[-1]
 plot_grid(plotlist = llply(en_body$CP[translation_names], cnetplot, node_label="category",showCategory = 10))
 
-names = getChild("0-0-0", en_head$summary)[-1]
-SBM_neuro_list = llply(en_head$CP[names], cnetplot, node_label="category",showCategory = 10)
-WGCNA_neuro = cnetplot(en_head$WGCNA[[5]], node_label="category",showCategory = 10)
-WGCNA_photo = cnetplot(en_head$WGCNA[[7]], node_label="category",showCategory = 10)
+names = getChild("6-0-0-0", en_head$summary |> filter(n_enrich > 0))[-1]
+SBM_neuro_list = llply(en_head$CP[names], go_plots)
+WGCNA_neuro = go_plots(en_head$WGCNA[[5]])
+WGCNA_photo = go_plots(en_head$WGCNA[[7]])
+
+WGCNA_all = llply(en_head$WGCNA[-1], go_plots)
+plot_grid(plotlist = WGCNA_all, ncol = 3, labels = 1:7, scale = 0.9)
 
 neuro_list = SBM_neuro_list; neuro_list[[length(neuro_list)+1]] = WGCNA_neuro
 plot_000 = plot_grid(plotlist = neuro_list, ncol = 2, labels = c(names, "WGCNA module 4"), scale = 0.9)

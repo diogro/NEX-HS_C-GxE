@@ -8,7 +8,7 @@ if(!require(superheat)){install.packages("superheat"); library(superheat)}
 if(!require(mcclust)){install.packages("mcclust"); library(mcclust)}
 if(!require(patchwork)){install.packages("patchwork"); library(patchwork)}
 
-header = "head_weights-spearman_fdr-1e-05_mcmc_mode"
+header = "head_weights-spearman_fdr-1e-02_mcmc_mode"
 
 getBlockSizedf = function(level, block_df, all = FALSE, draw_level=level){
   upper = paste0("B", level+1)
@@ -85,12 +85,12 @@ makeEmatrixPlots = function(header,
   return(list(df = block_df, E = e_mats, plots = all_plots, plot_list = plot_list))
 }
 
-out_fdr_0.4_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-04_mcmc_mode", levels = 4)
-out_fdr_0.5_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-05_mcmc_mode", levels = 4)
+out_fdr_1e2_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-02_mcmc_mode", levels = 4)
+out_fdr_1e3_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-03_mcmc_mode", levels = 4)
 
 
-plot = plot_grid(out_fdr_0.5_body$plot_list[[1]] + ggtitle("Body - SBM Level-1"),
-                 out_fdr_0.4_head$plot_list[[1]] + ggtitle("Head - SBM Level-1"))
+plot = plot_grid(out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body - SBM Level-1"),
+                 out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head - SBM Level-1"))
 
 save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 10, ncol = 2, base_asp = 1.1)
 

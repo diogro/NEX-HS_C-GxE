@@ -175,3 +175,16 @@ makeEnrichment = function(block_path){
               # XGR_CC = enGo_XGR_CC
               ))
 }
+
+go_plots = function(local_go_upper, ...){
+  pw_upper <- pairwise_termsim(local_go_upper) 
+  plot_upper <- emapplot(pw_upper, showCategory = 30, ...) + 
+            theme_tufte() + 
+            theme(legend.position = "none") + 
+            theme(plot.title = element_text(size=28),
+                  axis.title = element_blank(),
+                  axis.text = element_blank(),
+                  axis.ticks = element_blank()) 
+  plot_upper$data$color = mean(plot_upper$data$color)
+  plot_upper
+}
