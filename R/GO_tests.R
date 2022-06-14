@@ -1,4 +1,4 @@
-pak::pkg_install("GuangchuangYu/enrichplot")
+pak::pkg_install("enrichplot")
 source(here::here("R/go_functions.R"))
 
 
