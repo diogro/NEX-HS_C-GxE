@@ -88,9 +88,28 @@ makeEmatrixPlots = function(header,
 out_fdr_1e2_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-02_mcmc_mode", levels = 4)
 out_fdr_1e3_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-03_mcmc_mode", levels = 4)
 
+library(patchwork)
+pak::pkg_install("ggeasy")
+library(ggeasy)
 
-plot = plot_grid(out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body - SBM Level-1"),
-                 out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head - SBM Level-1"))
 
-save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 10, ncol = 2, base_asp = 1.1)
+img1 <- magick::image_read("data/output/SBM/guide_plots/body/fdr-1e-03/full_plot.png")
+body_full = ggplot2::ggplot() + ggplot2::annotation_custom(grid::rasterGrob(img1,
+                                               width=ggplot2::unit(1,"npc"),
+                                               height=ggplot2::unit(1,"npc")),
+                               -Inf, Inf, -Inf, Inf) + ggtitle("C. Body - Full nested SBM") + 
+                               theme_cowplot() + easy_remove_axes()
+img2 <- magick::image_read("data/output/SBM/guide_plots/head/fdr-1e-02/full_plot.png")
+head_full = ggplot2::ggplot() + ggplot2::annotation_custom(grid::rasterGrob(img2,
+                                               width=ggplot2::unit(1,"npc"),
+                                               height=ggplot2::unit(1,"npc")),
+                               -Inf, Inf, -Inf, Inf) + ggtitle("D. Head - Full nested SBM") + 
+                               theme_cowplot() + easy_remove_axes()
+
+
+plot = out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body - SBM Level-1") + 
+       out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head - SBM Level-1") +
+        body_full + head_full
+plot
+save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 10, ncol = 2, nrow = 2, base_asp = 1.)
 

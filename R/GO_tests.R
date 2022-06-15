@@ -1,6 +1,8 @@
 source(here::here("R/go_functions.R"))
 
-plots_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
+#plots_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
+plots_path = "~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
+
 
 # en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks")
@@ -32,12 +34,14 @@ write.csv(en_body$summary, file = here::here("data/output/SBM/GO/Summary_body_fd
 
 en_body$summary %>%
   filter(Nested_Level == 1) %>%
-  arrange(desc(N_genes)) %>% head()
+  arrange(desc(Assortatitvity)) %>% head()
 
 CP_print("4-0-0-0", en_head$CP, en_head$summary) %>%
   filter(Block == "4-0-0-0") 
 CP_print("8-7-2-0-0", en_body$CP, en_body$summary)
 
+#%%
+### Table 1: Go enrichment of body and head
 
 table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==1]!=0)
 table_en
@@ -54,16 +58,13 @@ table_en/sum(table_en)
 table_en = table(en_body$summary$n_enrich[en_body$summary$Nested_Level==2]!=0)
 table_en
 table_en/sum(table_en)
-
-llply(en_body$summary$Name[en_body$summary$Nested_Level==2], CP_plot, en_body$CP, en_body$summary)
+#%%
 
 Level = 4
 for(x in en_head$summary$Name[en_head$summary$Nested_Level==Level]){
   df = CP_print(x, enGo = en_head$CP, en_head$summary, recursive = FALSE, fdr = 1e-5)
   print(df)
 }
-
-
 
 wgcna_df_body =ldply(1:length(en_body$WGCNA), function(id){
   x <- en_body$WGCNA[[id]];
@@ -80,6 +81,18 @@ wgcna_df_head =ldply(1:length(en_head$WGCNA), function(id){
         mutate(Module = id-1) %>%
         select(Module, everything())
 })
+
+ggplot(en_body$summary, aes(N_genes, n_enrich)) + geom_point() + theme_cowplot() + facet_wrap(~Nested_Level, scales="free")
+
+wgcna_df_head %>%
+  group_by(Module) %>%
+  filter(Module > 0) %>%
+  count()
+wgcna_df_body %>%
+  group_by(Module) %>%
+  filter(Module > 0) %>%
+  count()
+
 wgcna_df_body %>% filter(grepl("cytoplasmic translation", Description))
 wgcna_df_head %>% filter(grepl("ATP", Description))
 
