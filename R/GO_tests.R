@@ -4,16 +4,16 @@ source(here::here("R/go_functions.R"))
 plots_path = "~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
 
 
-# en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks")
-# en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks")
-# en_head$WGCNA = llply(0:7, getEnrichment,
-#                       folder_path="data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks",
-#                        clustering = "WGCNA")
-# en_body$WGCNA = llply(0:7, getEnrichment,
-#                       folder_path="data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks",
-#                       clustering = "WGCNA")
-# saveRDS(en_head, here::here('data/enGo_head_fdr-1e-02.Rds'))
-# saveRDS(en_body, here::here('data/enGo_body_fdr-1e-03.Rds'))
+en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks")
+en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks")
+en_head$WGCNA = llply(0:7, getEnrichment,
+                      folder_path="data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks",
+                       clustering = "WGCNA")
+en_body$WGCNA = llply(0:7, getEnrichment,
+                      folder_path="data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks",
+                      clustering = "WGCNA")
+saveRDS(en_head, here::here('data/enGo_head_fdr-1e-02.Rds'))
+saveRDS(en_body, here::here('data/enGo_body_fdr-1e-03.Rds'))
 # en_head_abs = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_body_abs = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_absolute_mcmc_mode_hierarchical-SBM_gene-blocks")
 # saveRDS(en_head_abs, 'data/enGo_head_abs.Rds')
@@ -32,12 +32,15 @@ write.csv(en_body_table, file = here::here("data/output/SBM/GO/GOenrichment_body
 write.csv(en_head$summary, file = here::here("data/output/SBM/GO/Summary_head_fdr-1e-02.csv"))
 write.csv(en_body$summary, file = here::here("data/output/SBM/GO/Summary_body_fdr-1e-03.csv"))
 
-en_body$summary %>%
+en_head$summary %>%
   filter(Nested_Level == 1) %>%
-  arrange(desc(Assortatitvity)) %>% head()
+  arrange(desc(Assortativity)) %>%
+  mutate(AssortativityRank = rank(Assortativity)) %>%
+  filter(Parent %in% c(6, 4, 0), n_enrich > 0) %>%
+  select(Name, Parent, Assortativity, AssortativityRank) 
 
 CP_print("4-0-0-0", en_head$CP, en_head$summary) %>%
-  filter(Block == "4-0-0-0") 
+  filter(Block == "4-0-0-0")  
 CP_print("8-7-2-0-0", en_body$CP, en_body$summary)
 
 #%%
@@ -84,6 +87,9 @@ wgcna_df_head =ldply(1:length(en_head$WGCNA), function(id){
 
 ggplot(en_body$summary, aes(N_genes, n_enrich)) + geom_point() + theme_cowplot() + facet_wrap(~Nested_Level, scales="free")
 
+
+#%%  # WGCNA enrichment of body and head
+
 wgcna_df_head %>%
   group_by(Module) %>%
   filter(Module > 0) %>%
@@ -94,7 +100,11 @@ wgcna_df_body %>%
   count()
 
 wgcna_df_body %>% filter(grepl("cytoplasmic translation", Description))
-wgcna_df_head %>% filter(grepl("ATP", Description))
+wgcna_df_body %>% filter(grepl("ATP", Description))
+wgcna_df_body %>% filter(grepl("respiration", Description))
+
+wgcna_df_head %>% filter(grepl("cell adhesion", Description))
+wgcna_df_head %>% filter(Module == 5)
 
 
 WGCNA_head_all = llply(en_head$WGCNA[-1], barplot)
@@ -127,6 +137,7 @@ wgcna_df_body %>%
 wgcna_df_head %>%
   group_by(Module) %>%
   count()
+#%%
 
 names = c(getChild("6-0-0-0", en_head$summary |> filter(n_enrich > 0))[-1],
           getChild("4-0-0-0", en_head$summary |> filter(n_enrich > 0))[-1],

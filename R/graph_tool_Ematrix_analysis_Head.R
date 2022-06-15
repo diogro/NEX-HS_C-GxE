@@ -66,7 +66,7 @@ makeEmatrixPlots = function(header,
       geom_tile() +
       scale_fill_viridis_c(alpha = 1)  + theme_cowplot() +
       labs(y = "Blocks", x = "Blocks") + ggtitle(paste("Level", level)) +
-      theme(axis.text.x = element_text(angle=45, vjust=0.6), legend.position = "none")
+      theme(axis.text.x = element_text(angle=90, vjust=0.6), legend.position = "none")
     if(level < levels){
       for(i in level:(levels-1)){
         b_size_df = getBlockSizedf(i, block_df, all = TRUE, level)
@@ -111,5 +111,5 @@ plot = out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body - SBM Level-1") +
        out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head - SBM Level-1") +
         body_full + head_full
 plot
-save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 10, ncol = 2, nrow = 2, base_asp = 1.)
+save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 11, ncol = 2, nrow = 2, base_asp = 1.)
 
