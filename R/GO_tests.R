@@ -108,9 +108,9 @@ respiration_body = inner_join(en_body_table  %>% filter(grepl("fatty acid", Desc
                               select(-geneID, -pvalue),
                             en_body$summary, by="Name") %>% filter(Nested_Level == 2)
 
-mean(c(translate_head$Assortatitvity, translate_body$Assortatitvity))
-min( c(translate_head$Assortatitvity, translate_body$Assortatitvity))
-max( c(translate_head$Assortatitvity, translate_body$Assortatitvity))
+mean(c(translate_head$Assortativity, translate_body$Assortativity))
+min( c(translate_head$Assortativity, translate_body$Assortativity))
+max( c(translate_head$Assortativity, translate_body$Assortativity))
 
 
 names_head = translate_head$Name
@@ -218,7 +218,7 @@ plot_grid(plotlist = pl)
 # Some non-assortative modules in the head:
 
 head_non_assort = en_head$summary %>% 
-  filter(Assortatitvity < 0 & n_enrich > 0)
+  filter(Assortativity < 0 & n_enrich > 0)
 
 en_head_table %>%
   filter(Name %in% head_non_assort$Name)
@@ -228,7 +228,7 @@ p = plot_grid(plotlist = pl, labels = head_non_assort$Name)
 save_plot("head_non_assortative_options.png", p, ncol = 2, nrow = 2, base_height = 5)
 
 body_non_assort = en_body$summary %>% 
-  filter(Assortatitvity < -0.006 & n_enrich > 0 & Nested_Level == 1 & N_genes < 30)
+  filter(Assortativity < -0.006 & n_enrich > 0 & Nested_Level == 1 & N_genes < 30)
 
 pl = llply(body_non_assort$Name, auto_barplot, en_body$CP)
 p = plot_grid(plotlist = pl, labels = body_non_assort$Name)
@@ -247,13 +247,13 @@ translation_assortativity = inner_join(en_body_table  %>%
            select(-geneID, -pvalue),
            en_body$summary, by="Name") %>% 
            filter(Nested_Level == 1) %>% 
-           select(Name, Assortatitvity, Translation) %>% 
+           select(Name, Assortativity, Translation) %>% 
            unique()
 
-compare_means(Assortatitvity ~ Translation, data = translation_assortativity, method = "wilcox.test")
+compare_means(Assortativity ~ Translation, data = translation_assortativity, method = "wilcox.test")
 
 my_comparisons <- list(c(1, 2))
-p <- ggboxplot(translation_assortativity, x = "Translation", y = "Assortatitvity",
+p <- ggboxplot(translation_assortativity, x = "Translation", y = "Assortativity",
                     add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cytoplasmic translation")) +
                     labs(x = "GO annotation")
 #  Add p-value
@@ -269,13 +269,13 @@ translation_assortativity = inner_join(en_head_table  %>%
            select(-geneID, -pvalue),
            en_head$summary, by="Name") %>% 
            filter(Nested_Level == 1) %>% 
-           select(Name, Assortatitvity, Translation) %>% 
+           select(Name, Assortativity, Translation) %>% 
            unique()
 
-compare_means(Assortatitvity ~ Translation, data = translation_assortativity, method = "wilcox.test")
+compare_means(Assortativity ~ Translation, data = translation_assortativity, method = "wilcox.test")
 
 my_comparisons <- list(c(1, 2))
-p <- ggboxplot(translation_assortativity, x = "Translation", y = "Assortatitvity",
+p <- ggboxplot(translation_assortativity, x = "Translation", y = "Assortativity",
                     add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cytoplasmic translation")) +
                     labs(x = "GO annotation")
 #  Add p-value
@@ -298,13 +298,13 @@ translation_assortativity = inner_join(en_body_table  %>%
            select(-geneID, -pvalue),
            en_body$summary, by="Name") %>% 
            filter(Nested_Level == 1) %>% 
-           select(Name, Assortatitvity, Respiration) %>% 
+           select(Name, Assortativity, Respiration) %>% 
            unique()
 
-compare_means(Assortatitvity ~ Respiration, data = translation_assortativity, method = "wilcox.test")
+compare_means(Assortativity ~ Respiration, data = translation_assortativity, method = "wilcox.test")
 
 my_comparisons <- list(c(1, 2))
-p <- ggboxplot(translation_assortativity, x = "Respiration", y = "Assortatitvity",
+p <- ggboxplot(translation_assortativity, x = "Respiration", y = "Assortativity",
                     add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cell Respiration")) +
                     labs(x = "GO annotation")
 #  Add p-value
@@ -332,13 +332,13 @@ translation_assortativity = inner_join(en_head_table  %>%
            select(-geneID, -pvalue),
            en_head$summary, by="Name") %>% 
            filter(Nested_Level == 1) %>% 
-           select(Name, Assortatitvity, Respiration) %>% 
+           select(Name, Assortativity, Respiration) %>% 
            unique()
 
-compare_means(Assortatitvity ~ Respiration, data = translation_assortativity, method = "wilcox.test")
+compare_means(Assortativity ~ Respiration, data = translation_assortativity, method = "wilcox.test")
 
 my_comparisons <- list(c(1, 2))
-p <- ggboxplot(translation_assortativity, x = "Respiration", y = "Assortatitvity",
+p <- ggboxplot(translation_assortativity, x = "Respiration", y = "Assortativity",
                     add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cell Respiration")) +
                     labs(x = "GO annotation")
 #  Add p-value
