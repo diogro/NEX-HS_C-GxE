@@ -1,6 +1,6 @@
-pak::pkg_install("enrichplot")
 source(here::here("R/go_functions.R"))
 
+plots_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
 
 # en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks")
@@ -34,9 +34,9 @@ en_body$summary %>%
   filter(Nested_Level == 1) %>%
   arrange(desc(N_genes)) %>% head()
 
-CP_print("4-0-0", en_head$CP, en_head$summary) %>%
-  filter(Block == "4-0-0") 
-CP_print("25-7-2-0-0", en_body$CP, en_body$summary)
+CP_print("4-0-0-0", en_head$CP, en_head$summary) %>%
+  filter(Block == "4-0-0-0") 
+CP_print("8-7-2-0-0", en_body$CP, en_body$summary)
 
 
 table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==1]!=0)
@@ -64,6 +64,7 @@ for(x in en_head$summary$Name[en_head$summary$Nested_Level==Level]){
 }
 
 
+
 wgcna_df_body =ldply(1:length(en_body$WGCNA), function(id){
   x <- en_body$WGCNA[[id]];
   dplyr::select(x@result, -geneID) %>%
@@ -81,8 +82,29 @@ wgcna_df_head =ldply(1:length(en_head$WGCNA), function(id){
 })
 wgcna_df_body %>% filter(grepl("cytoplasmic translation", Description))
 wgcna_df_head %>% filter(grepl("ATP", Description))
-cnetplot(en_head$WGCNA[[1]], node_label="category",showCategory = 10)
-cnetplot(en_body$WGCNA[[5]], node_label="category",showCategory = 10)
+
+
+WGCNA_head_all = llply(en_head$WGCNA[-1], barplot)
+plot_grid(plotlist = WGCNA_head_all, ncol = 3, labels = 1:7, scale = 0.9)
+
+WGCNA_body_all = llply(en_body$WGCNA[-1], barplot)
+plot_grid(plotlist = WGCNA_body_all, ncol = 3, labels = 1:7, scale = 0.9)
+
+names = en_head$summary %>% filter(Nested_Level == 3)
+Level_3_list = llply(en_head$CP[names$Name], barplot)
+plot_grid(plotlist = Level_3_list, ncol = 3, labels = names$Name, scale = 0.9)
+
+names = en_head$summary %>% filter(Nested_Level == 2, n_enrich > 0)
+Level_2_list = llply(en_head$CP[names$Name], barplot)
+plot_grid(plotlist = Level_2_list, ncol = 4, labels = names$Name, scale = 0.9)
+
+names = en_body$summary %>% filter(Nested_Level == 3)
+Level_3_list = llply(en_body$CP[names$Name], barplot)
+plot_grid(plotlist = Level_3_list, ncol = 3, labels = names$Name, scale = 0.9)
+
+names = en_body$summary %>% filter(Nested_Level == 2, n_enrich > 0)
+Level_2_list = llply(en_body$CP[names$Name], barplot)
+plot_grid(plotlist = Level_2_list, ncol = 4, labels = names$Name, scale = 0.9)
 
 wgcna_df_head %>% filter(Module==2)
 
@@ -93,12 +115,42 @@ wgcna_df_head %>%
   group_by(Module) %>%
   count()
 
-translate_head = inner_join(en_head_table  %>% filter(grepl("cytoplasmic translation", Description)) %>%
+names = c(getChild("6-0-0-0", en_head$summary |> filter(n_enrich > 0))[-1],
+          getChild("4-0-0-0", en_head$summary |> filter(n_enrich > 0))[-1],
+          getChild("0-0-0-0", en_head$summary |> filter(n_enrich > 0))[-1])[c(-4, -6)]
+SBM_neuro_list = llply(en_head$CP[names], barplot)
+WGCNA_neuro = barplot(en_head$WGCNA[[5]])
+
+neuro_list = SBM_neuro_list; neuro_list[[length(neuro_list)+1]] = WGCNA_neuro
+plot_000 = plot_grid(plotlist = neuro_list, ncol = 2, labels = c(names, "WGCNA module 4"), scale = 0.95)
+plot_000
+save_plot(file.path(plots_path, "000_go_map.png"), plot_000, base_height = 4.3,
+          base_asp = 1.8, ncol = 2, nrow = 4)
+
+names = getChild("8-4-1-1", en_head$summary |> filter(n_enrich > 0))[-1]
+SBM_translation_list = llply(en_head$CP[names], barplot)
+WGCNA_translation = barplot(en_head$WGCNA[[3]])
+
+translation_list = SBM_translation_list; translation_list[[length(translation_list)+1]] = WGCNA_translation
+plot_411 = plot_grid(plotlist = translation_list, ncol = 2, labels = c(names, "WGCNA module 4"), scale = 0.9)
+save_plot(file.path(plots_path, "411_translation_map.png"), plot_411, base_height = 5,
+          base_asp = 1.5, ncol = 2, nrow = 3)
+
+translate_head = inner_join(en_head_table  %>% filter(grepl("cytoplasmic translation", Description) |
+                                                        grepl("^translation$", Description)) %>%
                               select(-geneID, -pvalue),
-           en_head$summary, by="Name") %>% filter(Nested_Level == 2)
+           en_head$summary, by="Name") %>% filter(Nested_Level == 1)
+translate_body = inner_join(en_body_table  %>% filter(grepl("cytoplasmic translation", Description) |
+                                                        grepl("^translation$", Description)) %>%
+                              select(-geneID, -pvalue),
+                            en_body$summary, by="Name") %>% filter(Nested_Level == 1)
+translate_all = rbind(translate_body, translate_head) %>%
+  filter(N_genes < 100) 
+summary(translate_all$Assortatitvity)
+
 neuro_head = inner_join(en_head_table  %>% filter(grepl("G protein-coupled receptor", Description)) %>%
                               select(-geneID, -pvalue),
-                            en_head$summary, by="Name") %>% filter(Nested_Level == 2)
+                            en_head$summary, by="Name") %>% filter(Nested_Level == 1)
 
 inner_join(en_head_table %>%
              select(-geneID, -pvalue),
@@ -126,7 +178,7 @@ SBM_translation_list = llply(en_head$CP[names_head], cnetplot, node_label="categ
 SBM_translation_list = append(SBM_translation_list, llply(en_head$CP[names_body], cnetplot, node_label="category",showCategory = 10))
 plot_translation= plot_grid(plotlist = SBM_translation_list, ncol = 2,
                             labels = c(paste("Head -", names_head), paste("Body -", names_head)), scale = 0.9)
-save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/Translation_go_map.png", plot_translation, base_height = 5,
+save_plot(file.path(plots_path, "Translation_go_map.png"), plot_translation, base_height = 5,
           base_asp = 2, ncol = 2, nrow = 4)
 
   inner_join(en_body_table  %>% filter(grepl("11-1-1", .id)) %>% select(-geneID, -pvalue) %>% rename(Name=.id),
@@ -142,18 +194,7 @@ save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/plot_11_1_
 translation_names = getChild("1-1-1", en_body$summary)[-1]
 plot_grid(plotlist = llply(en_body$CP[translation_names], cnetplot, node_label="category",showCategory = 10))
 
-names = getChild("6-0-0-0", en_head$summary |> filter(n_enrich > 0))[-1]
-SBM_neuro_list = llply(en_head$CP[names], go_plots)
-WGCNA_neuro = go_plots(en_head$WGCNA[[5]])
-WGCNA_photo = go_plots(en_head$WGCNA[[7]])
 
-WGCNA_all = llply(en_head$WGCNA[-1], go_plots)
-plot_grid(plotlist = WGCNA_all, ncol = 3, labels = 1:7, scale = 0.9)
-
-neuro_list = SBM_neuro_list; neuro_list[[length(neuro_list)+1]] = WGCNA_neuro
-plot_000 = plot_grid(plotlist = neuro_list, ncol = 2, labels = c(names, "WGCNA module 4"), scale = 0.9)
-save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/000_go_map.png", plot_000, base_height = 5,
-          base_asp = 1.5, ncol = 2, nrow = 3)
 plot_grid(plotlist = llply(en_head$CP[getChild("12-0-0", en_head$summary)[c(-1, -3, -5)]], cnetplot))
 
 getChild("1-1", en_head$summary)[c(-1)]

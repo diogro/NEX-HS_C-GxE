@@ -1,4 +1,7 @@
-pak::pkg_install(c("ggrepel", "AnnotationDbi", "org.Dm.eg.db", "clusterProfiler", "ggnewscale", "enrichplot"))
+pak::pkg_install(c("ggrepel", "AnnotationDbi", "org.Dm.eg.db", 
+                   "clusterProfiler", "ggnewscale", "enrichplot", 
+                   "tidyverse", "plyr",  "cowplot", "ggrepel", 
+                   "ggpubr", "ggthemes"))
 library(plyr)
 library(cowplot)
 library(ggrepel)
@@ -9,6 +12,7 @@ library(org.Dm.eg.db)
 library(clusterProfiler)
 library(ggnewscale)
 library(enrichplot)
+library(ggthemes)
 
 getLevel = function(x, n_levels = 5){
   x = gsub(".csv", "", x)
