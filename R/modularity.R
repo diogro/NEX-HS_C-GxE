@@ -21,6 +21,7 @@ ggplot(filter(en_head$summary, Nested_Level == 1), aes(N_genes, n_enrich_simple,
   geom_point() + geom_label_repel(aes(label = Block))
 
 
+pak::pkg_install("ggthemes")
 library(ggthemes)
 
 x = en_head$summary %>% filter(Nested_Level == 1) %>% mutate(is_enriched = n_enrich > 0)

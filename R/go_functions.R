@@ -1,4 +1,7 @@
-pak::pkg_install(c("ggrepel", "AnnotationDbi", "org.Dm.eg.db", "clusterProfiler", "ggnewscale", "enrichplot"))
+pak::pkg_install(c("ggrepel", "AnnotationDbi", "org.Dm.eg.db", 
+                   "clusterProfiler", "ggnewscale", "enrichplot", 
+                   "tidyverse", "plyr",  "cowplot", "ggrepel", 
+                   "ggpubr", "ggthemes"))
 library(plyr)
 library(cowplot)
 library(ggrepel)
@@ -9,6 +12,7 @@ library(org.Dm.eg.db)
 library(clusterProfiler)
 library(ggnewscale)
 library(enrichplot)
+library(ggthemes)
 
 getLevel = function(x, n_levels = 5){
   x = gsub(".csv", "", x)
@@ -174,4 +178,17 @@ makeEnrichment = function(block_path){
               # XGR = enGo_XGR,
               # XGR_CC = enGo_XGR_CC
               ))
+}
+
+go_plots = function(local_go_upper, cats = 20, ...){
+  pw_upper <- pairwise_termsim(local_go_upper) 
+  plot_upper <- emapplot(pw_upper, showCategory = cats, ...) + 
+            theme_tufte() + 
+            theme(legend.position = "none") + 
+            theme(plot.title = element_text(size=28),
+                  axis.title = element_blank(),
+                  axis.text = element_blank(),
+                  axis.ticks = element_blank()) 
+  plot_upper$data$color = mean(plot_upper$data$color)
+  plot_upper
 }

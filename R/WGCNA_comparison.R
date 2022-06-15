@@ -49,6 +49,9 @@ dev.off()
 names(head_modules) = colnames(expr_list$head)
 names(body_modules) = colnames(expr_list$body)
 
+table(head_modules)[-1] |> sum()
+table(body_modules)[-1] |> sum()
+
 Head_hsbm = read_csv("data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM.csv")
 Head_hsbm$X1 = NULL
 Head_hsbm$tissue = "head"
