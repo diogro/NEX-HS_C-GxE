@@ -37,11 +37,11 @@ makeEmatrixPlots = function(header,
                             levels = 5){
   block_df = read_csv(file.path(data_path, paste0(header, "_hierarchical-SBM.csv")))
   block_summary = read_csv(file.path(data_path, paste0(header, "_hierarchical-SBM_gene-blocks/block_summary.csv"))) %>%
-    filter(Nested_Level == 1) %>% select(Block, Internal_degree, Assortatitvity) %>%
+    filter(Nested_Level == 1) %>% select(Block, Internal_degree, Assortativity) %>%
     rename(B1 = Block)
   block_df = inner_join(block_df, block_summary)
   block_df = block_df %>%
-    arrange(B6, B5, B4, B3, B2, desc(Assortatitvity)) %>%
+    arrange(B6, B5, B4, B3, B2, desc(Assortativity)) %>%
     select(-1)
 
   e_mats = vector("list", levels)

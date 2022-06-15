@@ -197,5 +197,5 @@ Overall: [Gorilla 3-3-0](http://cbl-gorilla.cs.technion.ac.il/GOrilla/lrmmvnxq/G
 ## Block summary table:
 
 ```{r}
-dplyr::select(en_head$summary, Nested_Level, Name, N_genes, Internal_degree, Assortatitvity,  p.adjust, n_enrich)
+dplyr::select(en_head$summary, Nested_Level, Name, N_genes, Internal_degree, Assortativity,  p.adjust, n_enrich)
 ```

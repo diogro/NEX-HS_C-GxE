@@ -206,5 +206,5 @@ XGR_plot("3-2-2", en_body$XGR, en_body$summary)
 ## Block summary table:
 
 ```{r}
-dplyr::select(en_body$summary, Nested_Level, Name, N_genes, Internal_degree, Assortatitvity,  p.adjust, n_enrich)
+dplyr::select(en_body$summary, Nested_Level, Name, N_genes, Internal_degree, Assortativity,  p.adjust, n_enrich)
 ```
