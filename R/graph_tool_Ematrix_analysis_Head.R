@@ -56,7 +56,7 @@ makeEmatrixPlots = function(header,
     diag(e_matrix) = diag(e_matrix)/2
     e_mats[[i]] = e_matrix
   }
-  makePlot = function(level, e_mats, block_df){
+  makePlotE = function(level, e_mats, block_df){
     e_matrix = e_mats[[level]]
     colnames(e_matrix) = rownames(e_matrix) = paste0("b", rownames(e_matrix))
     melted_cormat <- reshape2::melt(e_matrix)
@@ -77,12 +77,21 @@ makeEmatrixPlots = function(header,
     }
     return(plot)
   }
-  plot_list = lapply(seq_along(1:levels), makePlot, e_mats, block_df)
-
+  makePlotDeg = function(level, block_df){
+    block_df[[paste0("B", level)]] = factor(block_df[[paste0("B", level)]], 
+                                            level = unique(block_df[[paste0("B", level)]]))
+    plot = ggplot(data = block_df, aes(x=B1, y=Degree)) + geom_boxplot() + 
+        scale_y_continuous(breaks = c(0, 1000, 2000), minor_breaks = c(500, 1500)) +
+        coord_flip() + theme_cowplot() + background_grid(minor = "xy") + easy_remove_axes() + 
+        theme(axis.title.x = element_text(), axis.text.x = element_text())
+    return(plot)
+  }
+  plot_list = lapply(seq_along(1:levels), makePlotE, e_mats, block_df)
+  plot_list_deg = lapply(seq_along(1:levels), makePlotDeg, block_df)
   all_plots = plot_grid(plotlist = plot_list)
   save_plot(file.path(plot_path, paste0(header, "_E_matrices.png")), all_plots,
             base_height = 10, base_asp = 1.2, ncol = 3, nrow = 2)
-  return(list(df = block_df, E = e_mats, plots = all_plots, plot_list = plot_list))
+  return(list(df = block_df, E = e_mats, plots = all_plots, plot_list = plot_list, plot_list_deg = plot_list_deg))
 }
 
 out_fdr_1e2_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-02_mcmc_mode", levels = 4)
@@ -113,3 +122,16 @@ plot = out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body - SBM Level-1") +
 plot
 save_plot("B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 11, ncol = 2, nrow = 2, base_asp = 1.)
 
+{layout <- "AAAAABCCCCCD
+AAAAABCCCCCD
+AAAAABCCCCCD
+AAAAABCCCCCD
+AAAAABCCCCCD
+"}
+plot = out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body - SBM Level-1")  + 
+            out_fdr_1e3_body$plot_list_deg[[1]] + plot_layout(design = layout) +
+            out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head - SBM Level-1")  + 
+            out_fdr_1e2_head$plot_list_deg[[1]] + plot_layout(design = layout)
+plot
+save_plot("B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix_with_degree.png", plot, 
+          base_height = 11, ncol = 2, nrow = 1, base_asp = 1. + 1/6)

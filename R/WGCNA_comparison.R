@@ -66,15 +66,49 @@ body_hsbm$tissue = "body"
 body_hsbm$WGCNA = body_modules[body_hsbm$Gene]
 
 WGCNA_HSBM = rbind(body_hsbm, Head_hsbm)
-write_csv(WGCNA_HSBM, file.path(out_path, "SI/TableS1-gene_clustering.csv"))
+# write_csv(WGCNA_HSBM, file.path(out_path, "SI/TableS1-gene_clustering.csv"))
 
 degree_plot = WGCNA_HSBM %>%
   ggplot(aes(WGCNA, Degree)) +
   geom_boxplot(aes(group = WGCNA)) +
   geom_jitter(alpha = 0.2, width = 0.2) +
   facet_wrap(~tissue, scales = "free") + theme_cowplot()
-save_plot("test.png", degree_plot, base_height = 7, ncol = 2, base_asp = 1.2)
+save_plot("WGCNA_degree.png", degree_plot, base_height = 7, ncol = 2, base_asp = 1.2)
 
+B1_order = WGCNA_HSBM %>%
+  group_by(B1, tissue ) %>%
+  summarise(avg_degree = mean(Degree)) %>%
+  arrange(desc(avg_degree))
+
+degree_plot_body = WGCNA_HSBM %>%
+  filter(tissue == "body") %>%
+  ggplot(aes(x=reorder(B3,Degree), Degree)) +
+  geom_boxplot(aes(group = B3)) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  facet_wrap(~tissue, scales = "free") + theme_cowplot() + ggtitle("body")
+degree_plot_head = WGCNA_HSBM %>%
+  filter(tissue != "body") %>%
+  ggplot(aes(x=reorder(B3,Degree), Degree)) +
+  geom_boxplot(aes(group = B3)) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  facet_wrap(~tissue, scales = "free") + theme_cowplot() + ggtitle("head")
+degree_plot = degree_plot_body + degree_plot_head
+save_plot("SBM_degree.png", degree_plot, base_height = 7, ncol = 2, base_asp = 1.2)
+
+E_corr_plot_body = WGCNA_HSBM %>%
+  filter(tissue == "body") %>%
+  ggplot(aes(x=reorder(B1,E_corr), E_corr)) +
+  geom_boxplot(aes(group = B1)) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  facet_wrap(~tissue, scales = "free") + theme_cowplot() + ggtitle("body")
+E_corr_plot_head = WGCNA_HSBM %>%
+  filter(tissue != "body") %>%
+  ggplot(aes(x=reorder(B1,E_corr), E_corr)) +
+  geom_boxplot(aes(group = B1)) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  facet_wrap(~tissue, scales = "free") + theme_cowplot() + ggtitle("head")
+E_corr_plot = E_corr_plot_body + E_corr_plot_head
+save_plot("SBM_E_corr.png", E_corr_plot, base_height = 7, ncol = 2, base_asp = 1.2)
 
 plot = WGCNA_HSBM %>%
   mutate(B4 = as.factor(B4), B1 = as.factor(B1)) %>%
