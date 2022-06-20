@@ -14,6 +14,9 @@ library(tictoc)
 data_folder = "data/output/SBM"
 dir(data_folder)
 
+out_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/"
+#plots_path = "~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
+
 expr_list = list(head = read.table(file.path(data_folder,
                                              "head_table_WGCNA_fdrLevel-1e-02.csv"),
                                    row.names = 1, header = TRUE, sep = ","),
@@ -63,6 +66,7 @@ body_hsbm$tissue = "body"
 body_hsbm$WGCNA = body_modules[body_hsbm$Gene]
 
 WGCNA_HSBM = rbind(body_hsbm, Head_hsbm)
+write_csv(WGCNA_HSBM, file.path(out_path, "SI/TableS1-gene_clustering.csv"))
 
 degree_plot = WGCNA_HSBM %>%
   ggplot(aes(WGCNA, Degree)) +
@@ -82,7 +86,7 @@ plot = WGCNA_HSBM %>%
 save_plot("test.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
 
 save_plot("data/output/SBM/plots/WGCNA_comparison.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
-save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures//WGCNA_comparison.png", plot, base_height = 5, ncol = 2, base_asp = 1.2)
+save_plot(file_path(out_path, "/figures//WGCNA_comparison.png"), plot, base_height = 5, ncol = 2, base_asp = 1.2)
 
 for(t in unique(WGCNA_HSBM$tissue)){
   fdr = c("body"= 3, "head"=2)

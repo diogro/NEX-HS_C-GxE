@@ -1,6 +1,8 @@
 source(here::here("R/go_functions.R"))
 
 plots_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
+out_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/"
+
 #plots_path = "~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
 
 
@@ -50,13 +52,12 @@ CP_print("14-9-1-1", en_body$CP, en_body$summary) %>%
   filter(Block != "14-9-1-1")  
 CP_print("8-7-2-0-0", en_body$CP, en_body$summary)
 getChild("14-9-1-1", en_body$summary)
-getChild("1-7-1-1", en_body$summary)
+getChild("1-7-1-1", en_body$summary |> filter(n_enrich>0))
 CP_print("14-9-1-1", en_body$CP, en_body$summary) %>%
   filter(Block != "14-9-1-1")  
 
 CP_print("1-7-1-1", en_body$CP, en_body$summary) %>%
   filter(Block != "1-7-1-1") 
-
 en_body$summary %>%
   filter(Nested_Level == 1) %>%
   arrange(desc(Assortativity)) %>%
@@ -94,17 +95,21 @@ wgcna_df_body =ldply(1:length(en_body$WGCNA), function(id){
   x <- en_body$WGCNA[[id]];
   dplyr::select(x@result, -geneID) %>%
     filter(p.adjust < 0.05, Count >= 4) %>%
-    mutate(Module = id-1) %>%
-    select(Module, everything())
+    mutate(Module = id-1, Tissue = "body") %>%
+    filter(Module > 0) %>%
+    select(Tissue, Module, everything())
 })
 
 wgcna_df_head =ldply(1:length(en_head$WGCNA), function(id){
       x <- en_head$WGCNA[[id]];
       dplyr::select(x@result, -geneID) %>%
         filter(p.adjust < 0.05, Count >= 4) %>%
-        mutate(Module = id-1) %>%
-        select(Module, everything())
+        mutate(Module = id-1, Tissue = "head") %>%
+        filter(Module > 0) %>%
+        select(Tissue, Module, everything())
 })
+wgcna_df = rbind(wgcna_df_body, wgcna_df_head)
+write_csv(wgcna_df, file.path(out_path, "SI/GOenrichment-WGCNA.csv"))
 
 ggplot(en_body$summary, aes(N_genes, n_enrich)) + geom_point() + theme_cowplot() + facet_wrap(~Nested_Level, scales="free")
 
