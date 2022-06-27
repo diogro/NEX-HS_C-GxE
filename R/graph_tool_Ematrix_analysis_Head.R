@@ -1,12 +1,11 @@
-if(!require(plyr)){install.packages("plyr"); library(plyr)}
-if(!require(tidyverse)){install.packages("tidyverse"); library(tidyverse)}
-if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
-if(!require(ggthemes)){install.packages("ggthemes"); library(ggthemes)}
-if(!require(xkcd)){install.packages("xkcd"); library(xkcd)}
-if(!require(extrafont)){install.packages("extrafont"); library(extrafont)}
-if(!require(superheat)){install.packages("superheat"); library(superheat)}
-if(!require(mcclust)){install.packages("mcclust"); library(mcclust)}
-if(!require(patchwork)){install.packages("patchwork"); library(patchwork)}
+if(!require(plyr)){pak::pkg_install("plyr"); library(plyr)}
+if(!require(tidyverse)){pak::pkg_install("tidyverse"); library(tidyverse)}
+if(!require(cowplot)){pak::pkg_install("cowplot"); library(cowplot)}
+if(!require(ggthemes)){pak::pkg_install("ggthemes"); library(ggthemes)}
+if(!require(extrafont)){pak::pkg_install("extrafont"); library(extrafont)}
+if(!require(superheat)){pak::pkg_install("superheat"); library(superheat)}
+if(!require(mcclust)){pak::pkg_install("mcclust"); library(mcclust)}
+if(!require(patchwork)){pak::pkg_install("patchwork"); library(patchwork)}
 
 header = "head_weights-spearman_fdr-1e-02_mcmc_mode"
 
@@ -65,8 +64,9 @@ makeEmatrixPlots = function(header,
     plot = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
       geom_tile() +
       scale_fill_viridis_c(alpha = 1)  + theme_cowplot() +
-      labs(y = "Blocks", x = "Blocks") + ggtitle(paste("Level", level)) +
-      theme(axis.text.x = element_text(angle=90, vjust=0.6), legend.position = "none")
+      labs(y = "Level-1 Blocks", x = "Level-1 Blocks") + ggtitle(paste("Level", level)) +
+      theme(axis.text.x = element_text(angle=90, vjust=0.6), legend.position = "bottom", 
+                                      legend.key.width= unit(5.5, 'cm'), legend.title = element_blank())
     if(level < levels){
       for(i in level:(levels-1)){
         b_size_df = getBlockSizedf(i, block_df, all = TRUE, level)
@@ -94,33 +94,39 @@ makeEmatrixPlots = function(header,
   return(list(df = block_df, E = e_mats, plots = all_plots, plot_list = plot_list, plot_list_deg = plot_list_deg))
 }
 
-out_fdr_1e2_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-02_mcmc_mode", levels = 4)
-out_fdr_1e3_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-03_mcmc_mode", levels = 4)
+out_fdr_1e2_head = makeEmatrixPlots("head_weights-spearman_fdr-1e-02_mcmc_mode", levels = 5)
+out_fdr_1e3_body = makeEmatrixPlots("body_weights-spearman_fdr-1e-03_mcmc_mode", levels = 5)
 
 library(patchwork)
 pak::pkg_install("ggeasy")
 library(ggeasy)
 
 
+title_size = 28
+axis_size = 22
 img1 <- magick::image_read("data/output/SBM/guide_plots/body/fdr-1e-03/trial.png")
 body_full = ggplot2::ggplot() + ggplot2::annotation_custom(grid::rasterGrob(img1,
                                                width=ggplot2::unit(1,"npc"),
                                                height=ggplot2::unit(1,"npc")),
-                               -Inf, Inf, -Inf, Inf) + ggtitle("C. Body - Full nested SBM") + 
-                               theme_cowplot() + easy_remove_axes()
+                               -Inf, Inf, -Inf, Inf) + ggtitle("C. Body") + 
+                               theme_cowplot() + easy_remove_axes() + theme(plot.title = element_text(size = title_size))
 img2 <- magick::image_read("data/output/SBM/guide_plots/head/fdr-1e-02/trial.png")
 head_full = ggplot2::ggplot() + ggplot2::annotation_custom(grid::rasterGrob(img2,
                                                width=ggplot2::unit(1,"npc"),
                                                height=ggplot2::unit(1,"npc")),
-                               -Inf, Inf, -Inf, Inf) + ggtitle("D. Head - Full nested SBM") + 
-                               theme_cowplot() + easy_remove_axes()
+                               -Inf, Inf, -Inf, Inf) + ggtitle("D. Head") + 
+                               theme_cowplot() + easy_remove_axes() + theme(plot.title = element_text(size = title_size))
 
 
-plot = out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body - SBM Level-1") + 
-       out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head - SBM Level-1") +
+plot = out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body") + theme(plot.title = element_text(size = title_size), 
+                                                                    axis.title.x = element_text(size = axis_size),
+                                                                    axis.title.y = element_text(size = axis_size)) + 
+       out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head") + theme(plot.title = element_text(size = title_size), 
+                                                                    axis.title.x = element_text(size = axis_size),
+                                                                    axis.title.y = element_text(size = axis_size)) + 
         body_full + head_full
 plot
-save_plot("B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 11, ncol = 2, nrow = 2, base_asp = 1.)
+save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 11, ncol = 2, nrow = 2, base_asp = 1.1)
 
 {layout <- "AAAAABCCCCCD
 AAAAABCCCCCD
@@ -128,10 +134,10 @@ AAAAABCCCCCD
 AAAAABCCCCCD
 AAAAABCCCCCD
 "}
-plot = out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body - SBM Level-1")  + 
+plot = out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body")  + 
             out_fdr_1e3_body$plot_list_deg[[1]] + plot_layout(design = layout) +
-            out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head - SBM Level-1")  + 
+            out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head")  + 
             out_fdr_1e2_head$plot_list_deg[[1]] + plot_layout(design = layout)
 plot
-save_plot("B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix_with_degree.png", plot, 
+save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix_with_degree.png", plot, 
           base_height = 11, ncol = 2, nrow = 1, base_asp = 1. + 1/6)
