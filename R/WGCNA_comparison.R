@@ -116,8 +116,10 @@ comparison_plot = function(df) {
   scale_y_continuous(breaks = 0:25, labels = c("Not\nclustered", 1:25)) + scale_x_continuous(breaks = 0:25) +
   theme_cowplot() + background_grid() + labs(y = "WGCNA Modules", x = "SBM\nLevel-3 blocks") +
   scale_color_discrete(name = "SBM\nLevel-4") + 
-  theme(legend.position = "bottom", 
-  legend.text = element_text(size = 28)) + guides(colour = guide_legend(override.aes = list(size=5)))
+  theme(legend.position = c(0.9, 0.9), 
+        legend.text = element_text(size = 23), 
+        legend.background =  element_rect(fill ="white")) + 
+        guides(colour = guide_legend(override.aes = list(size=5)))
 }
 
 plot_body = WGCNA_HSBM %>%
@@ -132,7 +134,7 @@ plot = plot_body + plot_head
 save_plot("test.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
 
 save_plot("data/output/SBM/plots/WGCNA_comparison.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
-save_plot(file_path(out_path, "/figures//WGCNA_comparison.png"), plot, base_height = 5, ncol = 2, base_asp = 1.2)
+save_plot(file.path(out_path, "/figures//WGCNA_comparison.png"), plot, base_height = 5, ncol = 2, base_asp = 1.2)
 
 for(t in unique(WGCNA_HSBM$tissue)){
   fdr = c("body"= 3, "head"=2)
