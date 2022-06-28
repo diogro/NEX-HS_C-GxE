@@ -110,13 +110,25 @@ E_corr_plot_head = WGCNA_HSBM %>%
 E_corr_plot = E_corr_plot_body + E_corr_plot_head
 save_plot("SBM_E_corr.png", E_corr_plot, base_height = 7, ncol = 2, base_asp = 1.2)
 
-plot = WGCNA_HSBM %>%
-  mutate(B4 = as.factor(B4), B1 = as.factor(B1)) %>%
-  ggplot(aes(B3, WGCNA, color = B4)) +
-  geom_jitter(width = 0.2, height = 0.2, alpha = 0.3) + facet_wrap(~tissue, scales = "free") +
+comparison_plot = function(df) {
+  ggplot(df, aes(B3, WGCNA, color = B4)) +
+  geom_jitter(width = 0.2, height = 0.2, alpha = 0.3) +
   scale_y_continuous(breaks = 0:25, labels = c("Not\nclustered", 1:25)) + scale_x_continuous(breaks = 0:25) +
   theme_cowplot() + background_grid() + labs(y = "WGCNA Modules", x = "SBM\nLevel-3 blocks") +
-  scale_color_discrete(name = "SBM\nLevel-4") + theme(legend.position = "bottom")
+  scale_color_discrete(name = "SBM\nLevel-4") + 
+  theme(legend.position = "bottom", 
+  legend.text = element_text(size = 28)) + guides(colour = guide_legend(override.aes = list(size=5)))
+}
+
+plot_body = WGCNA_HSBM %>%
+  filter(tissue == "body") %>%
+  mutate(B4 = as.factor(B4), B1 = as.factor(B1)) %>%
+  comparison_plot() + ggtitle("A. Body")
+plot_head = WGCNA_HSBM %>%
+  filter(tissue == "head") %>%
+  mutate(B4 = as.factor(B4), B1 = as.factor(B1)) %>%
+  comparison_plot() + ggtitle("B. Head")
+plot = plot_body + plot_head  
 save_plot("test.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
 
 save_plot("data/output/SBM/plots/WGCNA_comparison.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
