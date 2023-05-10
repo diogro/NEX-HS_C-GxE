@@ -14,7 +14,8 @@ library(tictoc)
 data_folder = "data/output/SBM"
 dir(data_folder)
 
-out_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/"
+#out_path = "B:/Dropbox/labbio/articles/SBM_manuscript/"
+out_path = "~/Dropbox/labbio/articles/SBM_manuscript/"
 #plots_path = "~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
 
 expr_list = list(head = read.table(file.path(data_folder,
@@ -108,7 +109,7 @@ E_corr_plot_head = WGCNA_HSBM %>%
   geom_jitter(alpha = 0.2, width = 0.2) +
   facet_wrap(~tissue, scales = "free") + theme_cowplot() + ggtitle("head")
 E_corr_plot = E_corr_plot_body + E_corr_plot_head
-save_plot("SBM_E_corr.png", E_corr_plot, base_height = 7, ncol = 2, base_asp = 1.2)
+save_plot("SBM_E_corr.png", E_corr_plot, base_width = 5.2, base_height = 3.5)
 
 plot = WGCNA_HSBM %>%
   mutate(B4 = as.factor(B4), B1 = as.factor(B1)) %>%
@@ -116,11 +117,20 @@ plot = WGCNA_HSBM %>%
   geom_jitter(width = 0.2, height = 0.2, alpha = 0.3) + facet_wrap(~tissue, scales = "free") +
   scale_y_continuous(breaks = 0:25, labels = c("Not\nclustered", 1:25)) + scale_x_continuous(breaks = 0:25) +
   theme_cowplot() + background_grid() + labs(y = "WGCNA Modules", x = "SBM\nLevel-3 blocks") +
-  scale_color_discrete(name = "SBM\nLevel-4") + theme(legend.position = "bottom")
-save_plot("test.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
+  scale_color_discrete(name = "SBM\nLevel-4") + 
+  theme(axis.text.x = element_text(size = 8),
+            plot.title = element_text(size = 8), 
+            axis.text.y = element_text(size = 8),
+            axis.title = element_text(size = 8),
+            legend.text = element_text(size = 8),
+            legend.title = element_text(size = 8),
+            axis.ticks.x = element_line(size = .3),
+            axis.ticks.length=unit(.07, "cm")) 
+save_plot("test.png", plot, base_width = 5.2, base_height = 3.5)
 
-save_plot("data/output/SBM/plots/WGCNA_comparison.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
-save_plot(file_path(out_path, "/figures//WGCNA_comparison.png"), plot, base_height = 5, ncol = 2, base_asp = 1.2)
+
+save_plot("data/output/SBM/plots/WGCNA_comparison.png", plot, base_width = 5.2, base_height = 3.5)
+save_plot(file_path(out_path, "/figures//WGCNA_comparison.png"), plot, base_width = 5.2, base_height = 3.5)
 
 for(t in unique(WGCNA_HSBM$tissue)){
   fdr = c("body"= 3, "head"=2)

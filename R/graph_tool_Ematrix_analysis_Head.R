@@ -63,14 +63,18 @@ makeEmatrixPlots = function(header,
     #plot heatmap
     plot = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
       geom_tile() +
-      scale_fill_viridis_c(alpha = 1)  + theme_cowplot() +
-      labs(y = "Level-1 Blocks", x = "Level-1 Blocks") + ggtitle(paste("Level", level)) +
-      theme(axis.text.x = element_text(angle=90, vjust=0.6), legend.position = "bottom", 
-                                      legend.key.width= unit(5.5, 'cm'), legend.title = element_blank())
+      scale_fill_viridis_c(alpha = 1)  + 
+      theme_cowplot() +
+      labs(y = "Level-1 Blocks", x = "Level-1 Blocks") + 
+      ggtitle(paste("Level", level)) +
+      scale_y_discrete(label = gsub("b", "", colnames(e_matrix))) + 
+      scale_x_discrete(label = gsub("b", "", colnames(e_matrix)), guide = guide_axis(n.dodge = 2)) + 
+      theme(axis.text.x = element_text(angle=35, vjust=0.3), legend.position = "bottom", 
+                                      legend.key.width= unit(22, 'mm'), legend.key.height= unit(2.2, 'mm'), legend.title = element_blank())
     if(level < levels){
       for(i in level:(levels-1)){
         b_size_df = getBlockSizedf(i, block_df, all = TRUE, level)
-        plot = plot + geom_rect(data = b_size_df, color = "tomato3", alpha = 0, size = 1,
+        plot = plot + geom_rect(data = b_size_df, color = "tomato3", alpha = 0, size = 0.5,
                                 aes(x = NULL, y = NULL, fill = NULL, xmin=start, xmax=end,
                                     ymin=start, ymax=end))
       }
@@ -101,32 +105,52 @@ library(patchwork)
 pak::pkg_install("ggeasy")
 library(ggeasy)
 
+{
+  title_size = 10
+  axis_size = 8
+  tick_size = 4
+  img1 <- magick::image_read("data/output/SBM/guide_plots/body/fdr-1e-03/trial.png")
+  body_full = ggplot2::ggplot() + ggplot2::annotation_custom(grid::rasterGrob(img1,
+                                                width=ggplot2::unit(1,"npc"),
+                                                height=ggplot2::unit(0.975,"npc")),
+                                -Inf, Inf, -Inf, Inf) + ggtitle("C.") + 
+                                theme_cowplot() + easy_remove_axes() + theme(plot.title = element_text(size = title_size))
+  img2 <- magick::image_read("data/output/SBM/guide_plots/head/fdr-1e-02/trial.png")
+  head_full = ggplot2::ggplot() + ggplot2::annotation_custom(grid::rasterGrob(img2,
+                                                width=ggplot2::unit(1,"npc"),
+                                                height=ggplot2::unit(1,"npc")),
+                                -Inf, Inf, -Inf, Inf) + ggtitle("D.") + 
+                                theme_cowplot() + easy_remove_axes() + theme(plot.title = element_text(size = title_size))
 
-title_size = 28
-axis_size = 22
-img1 <- magick::image_read("data/output/SBM/guide_plots/body/fdr-1e-03/trial.png")
-body_full = ggplot2::ggplot() + ggplot2::annotation_custom(grid::rasterGrob(img1,
-                                               width=ggplot2::unit(1,"npc"),
-                                               height=ggplot2::unit(1,"npc")),
-                               -Inf, Inf, -Inf, Inf) + ggtitle("C. Body") + 
-                               theme_cowplot() + easy_remove_axes() + theme(plot.title = element_text(size = title_size))
-img2 <- magick::image_read("data/output/SBM/guide_plots/head/fdr-1e-02/trial.png")
-head_full = ggplot2::ggplot() + ggplot2::annotation_custom(grid::rasterGrob(img2,
-                                               width=ggplot2::unit(1,"npc"),
-                                               height=ggplot2::unit(1,"npc")),
-                               -Inf, Inf, -Inf, Inf) + ggtitle("D. Head") + 
-                               theme_cowplot() + easy_remove_axes() + theme(plot.title = element_text(size = title_size))
+  plot = out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body") + theme(plot.title = element_text(size = title_size), 
+                                                                      axis.title.x = element_text(size = axis_size),
+                                                                      axis.title.y = element_text(size = axis_size),
+                                                                      axis.text.y = element_blank(),
+                                                                      axis.text.x = element_text(size = tick_size, 
+                                                                                    margin = margin(t = 0, r = 0, b = 0.2, l = 0)),
+                                                                      axis.ticks.x = element_line(size = .2),
+                                                                      axis.ticks.length=unit(.05, "cm"),
+                                                                      axis.ticks.y = element_blank(),
+                                                                      axis.line = element_blank(),
+                                                                      legend.key.width= unit(1.5, 'cm'),
+                                                                      legend.text = element_text(size = tick_size+1)) + 
+        out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head") + theme(plot.title = element_text(size = title_size), 
+                                                                      axis.title.x = element_text(size = axis_size),
+                                                                      axis.title.y = element_text(size = axis_size),
+                                                                      axis.text.y = element_blank(),
+                                                                      axis.text.x = element_text(size = tick_size, 
+                                                                                    margin = margin(t = 0, r = 0, b = 0.2, l = 0)),
+                                                                      axis.ticks.x = element_line(size = .2),
+                                                                      axis.ticks.length=unit(.05, "cm"),
+                                                                      axis.ticks.y = element_blank(),
+                                                                      axis.line = element_blank(),
+                                                                      legend.key.width= unit(1.5, 'cm'),
+                                                                      legend.text = element_text(size = tick_size+1)) + 
+          body_full + head_full
+  save_plot("~/Dropbox/labbio/articles/SBM_manuscript/figures/SBM_Ematrix.png", plot, 
+            base_width = 7.5, base_height = 7.5)
+}
 
-
-plot = out_fdr_1e3_body$plot_list[[1]] + ggtitle("A. Body") + theme(plot.title = element_text(size = title_size), 
-                                                                    axis.title.x = element_text(size = axis_size),
-                                                                    axis.title.y = element_text(size = axis_size)) + 
-       out_fdr_1e2_head$plot_list[[1]] + ggtitle("B. Head") + theme(plot.title = element_text(size = title_size), 
-                                                                    axis.title.x = element_text(size = axis_size),
-                                                                    axis.title.y = element_text(size = axis_size)) + 
-        body_full + head_full
-plot
-save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/SBM_Ematrix.png", plot, base_height = 11, ncol = 2, nrow = 2, base_asp = 1.1)
 
 {layout <- "AAAAABCCCCCD
 AAAAABCCCCCD
