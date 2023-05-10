@@ -47,7 +47,7 @@ library(ggthemes)
   p_body = x %>%
     mutate(Block = factor(Block, levels = x$Block[order(x$Assortativity)])) %>%
     ggplot(aes(x=Block, y=Assortativity, color = is_enriched)) +
-      geom_point(size = 1) + scale_color_colorblind(name = "GO Enriched") +
+      geom_point(size = 1) + scale_color_colorblind(name = "GO Enriched", labels = c("No", "Yes")) +
       geom_segment(linewidth = 0.5, aes(x=Block, xend=Block, y=0, yend=Assortativity)) +
       scale_x_discrete(guide = guide_axis(n.dodge = 2)) + 
       theme_cowplot() + geom_hline(yintercept = 0) +
@@ -60,6 +60,7 @@ library(ggthemes)
             legend.title = element_text(size = 6),
             axis.ticks.x = element_line(size = .3),
             axis.ticks.length=unit(.07, "cm")) +
+      guides(colour = guide_legend(override.aes = list(size=2)))
       labs(x = "Level-1 Blocks", y = "Assortativity")
 
 

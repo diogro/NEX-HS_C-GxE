@@ -1,9 +1,10 @@
 source(here::here("R/go_functions.R"))
 
-plots_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
-out_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/"
+#plots_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
+#out_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/"
 
-#plots_path = "~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
+plots_path = "~/Dropbox/labbio/articles/SBM_manuscript/figures/"
+out_path = "~/Dropbox/labbio/articles/SBM_manuscript/"
 
 
 # en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks")
@@ -327,12 +328,12 @@ compare_means(Assortativity ~ Translation, data = translation_assortativity, met
 
 my_comparisons <- list(c(1, 2))
 p <- ggboxplot(translation_assortativity, x = "Translation", y = "Assortativity",
-                    add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cytoplasmic translation")) +
+                    add = "jitter") + scale_x_discrete(labels = c("Other\nterms", "Cytoplasmic\ntranslation")) +
                     labs(x = "GO annotation")
 #  Add p-value
 p_body = p + 
-  stat_compare_means(label.y = 0.036, label.x = 0.7) + 
-  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test") +
+  stat_compare_means(label.y = 0.036, label.x = 0.7, size = 2) + 
+  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test", size = 2) +
   ggtitle("A. Body")
 
 
@@ -357,17 +358,42 @@ compare_means(Assortativity ~ Translation, data = translation_assortativity, met
 
 my_comparisons <- list(c(1, 2))
 p <- ggboxplot(translation_assortativity, x = "Translation", y = "Assortativity",
-                    add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cytoplasmic translation")) +
+                    add = "jitter") + scale_x_discrete(labels = c("Other\nterms", "Cytoplasmic\ntranslation")) +
                     labs(x = "GO annotation")
 #  Add p-value
 p_head = p + 
-  stat_compare_means(label.y = 0.17, label.x = 0.7) + 
-  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test") +
+  stat_compare_means(label.y = 0.17, label.x = 0.7, size = 2) + 
+  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test", size = 2) +
   ggtitle("B. Head")
 # Change method
 #p + stat_compare_means(method = "t.test")
-panel = p_body + p_head 
-save_plot("assortativity_cytoplasmic_translation.png", panel, base_height = 4, ncol = 2, base_asp = 1)
+panel = p_body + theme(
+            plot.title = element_text(size = 8), 
+            axis.text.y = element_text(size = 8),
+            axis.text.x = element_text(size = 6),
+            axis.title = element_text(size = 8),
+            legend.text = element_text(size = 8),
+            legend.title = element_text(size = 6),
+            axis.ticks.x = element_line(size = .3),
+            axis.ticks.length=unit(.07, "cm")) +
+  theme(legend.position = c(0.85, 0.9), 
+        legend.text = element_text(size = 6), 
+        legend.background = element_rect(fill ="white")) + 
+        guides(colour = guide_legend(override.aes = list(size=2.5))) + 
+        p_head +  theme(
+            plot.title = element_text(size = 8), 
+            axis.text.y = element_text(size = 8),
+            axis.text.x = element_text(size = 6),
+            axis.title = element_text(size = 8),
+            legend.text = element_text(size = 8),
+            legend.title = element_text(size = 6),
+            axis.ticks.x = element_line(size = .3),
+            axis.ticks.length=unit(.07, "cm")) +
+  theme(legend.position = c(0.85, 0.9), 
+        legend.text = element_text(size = 6), 
+        legend.background = element_rect(fill ="white")) + 
+        guides(colour = guide_legend(override.aes = list(size=2.5)))
+save_plot(file.path(plots_path, "assortativity_cytoplasmic_translation.png"), panel, base_width = 5.2, base_height = 5.2/2)
 }
 
 {
