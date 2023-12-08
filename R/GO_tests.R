@@ -1,6 +1,11 @@
 source(here::here("R/go_functions.R"))
 
-plots_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
+#plots_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
+#out_path = "B:/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/"
+
+plots_path = "~/Dropbox/labbio/articles/SBM_manuscript/figures/"
+out_path = "~/Dropbox/labbio/articles/SBM_manuscript/"
+
 
 # en_head = makeEnrichment("data/output/SBM/clustering/head_weights-spearman_fdr-1e-02_mcmc_mode_hierarchical-SBM_gene-blocks")
 # en_body = makeEnrichment("data/output/SBM/clustering/body_weights-spearman_fdr-1e-03_mcmc_mode_hierarchical-SBM_gene-blocks")
@@ -30,14 +35,39 @@ write.csv(en_body_table, file = here::here("data/output/SBM/GO/GOenrichment_body
 write.csv(en_head$summary, file = here::here("data/output/SBM/GO/Summary_head_fdr-1e-02.csv"))
 write.csv(en_body$summary, file = here::here("data/output/SBM/GO/Summary_body_fdr-1e-03.csv"))
 
+en_head$summary %>%
+  filter(Nested_Level == 1) %>%
+  arrange(desc(Assortativity)) %>%
+  mutate(AssortativityRank = rank(Assortativity)) %>%
+  filter(Parent %in% c(6, 4, 0), n_enrich > 0) %>%
+  select(Name, Parent, Assortativity, AssortativityRank) 
+
+en_head$summary %>%
+  filter(Nested_Level == 1) %>%
+  arrange(desc(Assortativity)) %>%
+  mutate(AssortativityRank = rank(Assortativity)) %>%
+  filter(Parent %in% c(15), n_enrich > 0) %>%
+  select(Name, Parent, Assortativity, AssortativityRank) 
+
+CP_print("14-9-1-1", en_body$CP, en_body$summary) %>%
+  filter(Block != "14-9-1-1")  
+CP_print("8-7-2-0-0", en_body$CP, en_body$summary)
+getChild("14-9-1-1", en_body$summary)
+getChild("1-7-1-1", en_body$summary |> filter(n_enrich>0))
+CP_print("14-9-1-1", en_body$CP, en_body$summary) %>%
+  filter(Block != "14-9-1-1")  
+
+CP_print("1-7-1-1", en_body$CP, en_body$summary) %>%
+  filter(Block != "1-7-1-1") 
 en_body$summary %>%
   filter(Nested_Level == 1) %>%
-  arrange(desc(N_genes)) %>% head()
+  arrange(desc(Assortativity)) %>%
+  mutate(AssortativityRank = rank(Assortativity)) %>%
+  filter(Parent %in% c(1), n_enrich > 0) %>%
+  select(Name, Parent, Assortativity, AssortativityRank)
 
-CP_print("4-0-0-0", en_head$CP, en_head$summary) %>%
-  filter(Block == "4-0-0-0") 
-CP_print("8-7-2-0-0", en_body$CP, en_body$summary)
-
+#%%
+### Table 1: Go enrichment of body and head
 
 table_en = table(en_head$summary$n_enrich[en_head$summary$Nested_Level==1]!=0)
 table_en
@@ -54,8 +84,7 @@ table_en/sum(table_en)
 table_en = table(en_body$summary$n_enrich[en_body$summary$Nested_Level==2]!=0)
 table_en
 table_en/sum(table_en)
-
-llply(en_body$summary$Name[en_body$summary$Nested_Level==2], CP_plot, en_body$CP, en_body$summary)
+#%%
 
 Level = 4
 for(x in en_head$summary$Name[en_head$summary$Nested_Level==Level]){
@@ -63,25 +92,48 @@ for(x in en_head$summary$Name[en_head$summary$Nested_Level==Level]){
   print(df)
 }
 
-
-
 wgcna_df_body =ldply(1:length(en_body$WGCNA), function(id){
   x <- en_body$WGCNA[[id]];
   dplyr::select(x@result, -geneID) %>%
     filter(p.adjust < 0.05, Count >= 4) %>%
-    mutate(Module = id-1) %>%
-    select(Module, everything())
+    mutate(Module = id-1, Tissue = "body") %>%
+    filter(Module > 0) %>%
+    select(Tissue, Module, everything())
 })
 
 wgcna_df_head =ldply(1:length(en_head$WGCNA), function(id){
       x <- en_head$WGCNA[[id]];
       dplyr::select(x@result, -geneID) %>%
         filter(p.adjust < 0.05, Count >= 4) %>%
-        mutate(Module = id-1) %>%
-        select(Module, everything())
+        mutate(Module = id-1, Tissue = "head") %>%
+        filter(Module > 0) %>%
+        select(Tissue, Module, everything())
 })
+wgcna_df = rbind(wgcna_df_body, wgcna_df_head)
+write_csv(wgcna_df, file.path(out_path, "SI/GOenrichment-WGCNA.csv"))
+
+ggplot(en_body$summary, aes(N_genes, n_enrich)) + geom_point() + theme_cowplot() + facet_wrap(~Nested_Level, scales="free")
+
+
+#%%  # WGCNA enrichment of body and head
+
+wgcna_df_head %>%
+  group_by(Module) %>%
+  filter(Module > 0) %>%
+  count()
+wgcna_df_body %>%
+  group_by(Module) %>%
+  filter(Module > 0) %>%
+  count()
+
 wgcna_df_body %>% filter(grepl("cytoplasmic translation", Description))
-wgcna_df_head %>% filter(grepl("ATP", Description))
+wgcna_df_body %>% filter(grepl("ATP", Description))
+wgcna_df_body %>% filter(grepl("respiration", Description))
+
+wgcna_df_head %>% filter(grepl("cell adhesion", Description))
+wgcna_df_head %>% filter(Module == 2)
+wgcna_df_body %>% filter(Module == 2)
+
 
 
 WGCNA_head_all = llply(en_head$WGCNA[-1], barplot)
@@ -114,6 +166,7 @@ wgcna_df_body %>%
 wgcna_df_head %>%
   group_by(Module) %>%
   count()
+#%%
 
 names = c(getChild("6-0-0-0", en_head$summary |> filter(n_enrich > 0))[-1],
           getChild("4-0-0-0", en_head$summary |> filter(n_enrich > 0))[-1],
@@ -140,13 +193,13 @@ translate_head = inner_join(en_head_table  %>% filter(grepl("cytoplasmic transla
                                                         grepl("^translation$", Description)) %>%
                               select(-geneID, -pvalue),
            en_head$summary, by="Name") %>% filter(Nested_Level == 1)
+en_head$summary %>% filter(Name %in% (translate_head$Name |> unique()))
 translate_body = inner_join(en_body_table  %>% filter(grepl("cytoplasmic translation", Description) |
                                                         grepl("^translation$", Description)) %>%
                               select(-geneID, -pvalue),
                             en_body$summary, by="Name") %>% filter(Nested_Level == 1)
-translate_all = rbind(translate_body, translate_head) %>%
-  filter(N_genes < 100) 
-summary(translate_all$Assortatitvity)
+en_body$summary %>% filter(Name %in% (translate_body$Name |> unique()))
+
 
 neuro_head = inner_join(en_head_table  %>% filter(grepl("G protein-coupled receptor", Description)) %>%
                               select(-geneID, -pvalue),
@@ -185,8 +238,8 @@ save_plot(file.path(plots_path, "Translation_go_map.png"), plot_translation, bas
              en_head$summary, by="Name") %>% filter(Nested_Level == 1)
 getChild("11-1-1", en_body$summary)
 cnetplot(en_body$CP$`11-1-1`, node_label="category",showCategory = 10)
-translation_names = getChild("11-1-1", en_body$summary)[-1]
-plot_11_1_1 = plot_grid(plotlist = llply(en_body$CP[translation_names], cnetplot,
+translation_names = getChild("14-9-1-1", en_body$summary |> filter(n_enrich > 0))[-1]
+plot_11_1_1 = plot_grid(plotlist = llply(en_body$CP[translation_names], barplot,
                                          node_label="category",showCategory = 10),
                         labels = translation_names, ncol = 2, scale = 0.9)
 save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/plot_11_1_1.png", plot_11_1_1, base_height = 5,
@@ -199,44 +252,6 @@ plot_grid(plotlist = llply(en_head$CP[getChild("12-0-0", en_head$summary)[c(-1, 
 
 getChild("1-1", en_head$summary)[c(-1)]
 plot_grid(plotlist = llply(en_head$CP_simple[getChild("1-1", en_head$summary)[c(-1)]], emplot))
-
-
-cnetplot(en_head$CP$`9-4-0`)
-cnetplot(en_head$CP$`1-1-1-1`)
-
-cnetplot(en_head$CP$`30-2-2-1`)
-
-cnetplot(en_head$WGCNA[[5]], node_label="category", showCategory = 20)
-dotplot(en_head$WGCNA[[5]])
-
-?dotplot
-
-
-rbind(read_csv("data/output/SBM/clustering/head_weights-spearman_fdr-1e-04_mcmc_mode_hierarchical-SBM.csv") %>%
-  mutate(tissue = "head"),
-read_csv("data/output/SBM/clustering/body_weights-spearman_fdr-1e-05_mcmc_mode_hierarchical-SBM.csv") %>%
-  mutate(tissue = "body")) %>% select(Gene, Degree, E_corr, B1:B4, tissue) %>%
-  write_csv("block_partition-HeadBody-Control.csv")
-
-
-bp2 <- clusterProfiler::simplify(en_head$WGCNA[[5]])
-emplot(clusterProfiler::simplify(en_head$WGCNA[[2]]))
-emplot(clusterProfiler::simplify(en_head$CP$`1-1-1`))
-
-emplot(clusterProfiler::simplify(en_head$WGCNA[[3]]))
-emplot(clusterProfiler::simplify(en_head$WGCNA[[4]]))
-emplot(clusterProfiler::simplify(en_head$WGCNA[[5]]))
-emplot(clusterProfiler::simplify(en_head$WGCNA[[6]]))
-emplot(clusterProfiler::simplify(en_head$WGCNA[[7]]))
-emplot(clusterProfiler::simplify(en_head$WGCNA[[8]]))
-
-enrichplot::treeplot(enrichplot::pairwise_termsim(en_head$WGCNA[[5]]))
-enrichplot::treeplot(enrichplot::pairwise_termsim(en_head$CP$`3-0`))
-
-enrichplot::treeplot(enrichplot::pairwise_termsim(en_head$CP$`1-1-1`))
-enrichplot::treeplot(enrichplot::pairwise_termsim(en_head$CP$`2-1`))
-enrichplot::treeplot(enrichplot::pairwise_termsim(en_head$WGCNA[[2]]))
-
 
 
 plot_grid(
@@ -297,47 +312,88 @@ translation_assortativity = inner_join(en_body_table  %>%
            mutate(Translation = grepl("cytoplasmic translation", Description) | grepl("^translation$", Description)) %>%
            select(-geneID, -pvalue),
            en_body$summary, by="Name") %>% 
-           filter(Nested_Level == 1) %>% 
+           filter(Nested_Level == 1, Translation) %>% 
            select(Name, Assortativity, Translation) %>% 
            unique()
+nontranslation_assortativity = inner_join(en_body_table  %>% 
+               select(-geneID, -pvalue),
+             en_body$summary, by="Name") %>% 
+    filter(Nested_Level == 1, !Name %in% translation_assortativity$Name) %>% 
+    mutate(Translation = FALSE) %>%
+    select(Name, Assortativity, Translation) %>% 
+    unique()
+translation_assortativity = rbind(translation_assortativity, nontranslation_assortativity)
 
 compare_means(Assortativity ~ Translation, data = translation_assortativity, method = "wilcox.test")
 
 my_comparisons <- list(c(1, 2))
 p <- ggboxplot(translation_assortativity, x = "Translation", y = "Assortativity",
-                    add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cytoplasmic translation")) +
+                    add = "jitter") + scale_x_discrete(labels = c("Other\nterms", "Cytoplasmic\ntranslation")) +
                     labs(x = "GO annotation")
 #  Add p-value
 p_body = p + 
-  stat_compare_means(label.y = 0.036, label.x = 0.7) + 
-  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test") +
+  stat_compare_means(label.y = 0.036, label.x = 0.7, size = 2) + 
+  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test", size = 2) +
   ggtitle("A. Body")
 
 
 # Head
 translation_assortativity = inner_join(en_head_table  %>% 
-           mutate(Translation = grepl("cytoplasmic translation", Description) | grepl("^translation$", Description)) %>%
-           select(-geneID, -pvalue),
-           en_head$summary, by="Name") %>% 
-           filter(Nested_Level == 1) %>% 
-           select(Name, Assortativity, Translation) %>% 
-           unique()
+                                         mutate(Translation = grepl("cytoplasmic translation", Description) | grepl("^translation$", Description)) %>%
+                                         select(-geneID, -pvalue),
+                                       en_head$summary, by="Name") %>% 
+  filter(Nested_Level == 1, Translation) %>% 
+  select(Name, Assortativity, Translation) %>% 
+  unique()
+nontranslation_assortativity = inner_join(en_head_table  %>% 
+                                            select(-geneID, -pvalue),
+                                          en_head$summary, by="Name") %>% 
+  filter(Nested_Level == 1, !Name %in% translation_assortativity$Name) %>% 
+  mutate(Translation = FALSE) %>%
+  select(Name, Assortativity, Translation) %>% 
+  unique()
+translation_assortativity = rbind(translation_assortativity, nontranslation_assortativity)
 
 compare_means(Assortativity ~ Translation, data = translation_assortativity, method = "wilcox.test")
 
 my_comparisons <- list(c(1, 2))
 p <- ggboxplot(translation_assortativity, x = "Translation", y = "Assortativity",
-                    add = "jitter") + scale_x_discrete(labels = c("Other terms", "Cytoplasmic translation")) +
+                    add = "jitter") + scale_x_discrete(labels = c("Other\nterms", "Cytoplasmic\ntranslation")) +
                     labs(x = "GO annotation")
 #  Add p-value
 p_head = p + 
-  stat_compare_means(label.y = 0.17, label.x = 0.7) + 
-  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test") +
+  stat_compare_means(label.y = 0.17, label.x = 0.7, size = 2) + 
+  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test", size = 2) +
   ggtitle("B. Head")
 # Change method
 #p + stat_compare_means(method = "t.test")
-panel = p_body + p_head 
-save_plot("assortativity_cytoplasmic_translation.png", panel, base_height = 4, ncol = 2, base_asp = 1)
+panel = p_body + theme(
+            plot.title = element_text(size = 8), 
+            axis.text.y = element_text(size = 8),
+            axis.text.x = element_text(size = 6),
+            axis.title = element_text(size = 8),
+            legend.text = element_text(size = 8),
+            legend.title = element_text(size = 6),
+            axis.ticks.x = element_line(size = .3),
+            axis.ticks.length=unit(.07, "cm")) +
+  theme(legend.position = c(0.85, 0.9), 
+        legend.text = element_text(size = 6), 
+        legend.background = element_rect(fill ="white")) + 
+        guides(colour = guide_legend(override.aes = list(size=2.5))) + 
+        p_head +  theme(
+            plot.title = element_text(size = 8), 
+            axis.text.y = element_text(size = 8),
+            axis.text.x = element_text(size = 6),
+            axis.title = element_text(size = 8),
+            legend.text = element_text(size = 8),
+            legend.title = element_text(size = 6),
+            axis.ticks.x = element_line(size = .3),
+            axis.ticks.length=unit(.07, "cm")) +
+  theme(legend.position = c(0.85, 0.9), 
+        legend.text = element_text(size = 6), 
+        legend.background = element_rect(fill ="white")) + 
+        guides(colour = guide_legend(override.aes = list(size=2.5)))
+save_plot(file.path(plots_path, "assortativity_cytoplasmic_translation.png"), panel, base_width = 5.2, base_height = 5.2/2)
 }
 
 {

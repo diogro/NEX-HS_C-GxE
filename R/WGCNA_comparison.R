@@ -14,6 +14,10 @@ library(tictoc)
 data_folder = "data/output/SBM"
 dir(data_folder)
 
+#out_path = "B:/Dropbox/labbio/articles/SBM_manuscript/"
+out_path = "~/Dropbox/labbio/articles/SBM_manuscript/"
+#plots_path = "~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures/"
+
 expr_list = list(head = read.table(file.path(data_folder,
                                              "head_table_WGCNA_fdrLevel-1e-02.csv"),
                                    row.names = 1, header = TRUE, sep = ","),
@@ -63,26 +67,84 @@ body_hsbm$tissue = "body"
 body_hsbm$WGCNA = body_modules[body_hsbm$Gene]
 
 WGCNA_HSBM = rbind(body_hsbm, Head_hsbm)
+# write_csv(WGCNA_HSBM, file.path(out_path, "SI/TableS1-gene_clustering.csv"))
 
 degree_plot = WGCNA_HSBM %>%
   ggplot(aes(WGCNA, Degree)) +
   geom_boxplot(aes(group = WGCNA)) +
   geom_jitter(alpha = 0.2, width = 0.2) +
   facet_wrap(~tissue, scales = "free") + theme_cowplot()
-save_plot("test.png", degree_plot, base_height = 7, ncol = 2, base_asp = 1.2)
+save_plot("WGCNA_degree.png", degree_plot, base_height = 7, ncol = 2, base_asp = 1.2)
 
+B1_order = WGCNA_HSBM %>%
+  group_by(B1, tissue ) %>%
+  summarise(avg_degree = mean(Degree)) %>%
+  arrange(desc(avg_degree))
 
-plot = WGCNA_HSBM %>%
-  mutate(B4 = as.factor(B4), B1 = as.factor(B1)) %>%
-  ggplot(aes(B3, WGCNA, color = B4)) +
-  geom_jitter(width = 0.2, height = 0.2, alpha = 0.3) + facet_wrap(~tissue, scales = "free") +
+degree_plot_body = WGCNA_HSBM %>%
+  filter(tissue == "body") %>%
+  ggplot(aes(x=reorder(B3,Degree), Degree)) +
+  geom_boxplot(aes(group = B3)) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  facet_wrap(~tissue, scales = "free") + theme_cowplot() + ggtitle("body")
+degree_plot_head = WGCNA_HSBM %>%
+  filter(tissue != "body") %>%
+  ggplot(aes(x=reorder(B3,Degree), Degree)) +
+  geom_boxplot(aes(group = B3)) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  facet_wrap(~tissue, scales = "free") + theme_cowplot() + ggtitle("head")
+degree_plot = degree_plot_body + degree_plot_head
+save_plot("SBM_degree.png", degree_plot, base_height = 7, ncol = 2, base_asp = 1.2)
+
+E_corr_plot_body = WGCNA_HSBM %>%
+  filter(tissue == "body") %>%
+  ggplot(aes(x=reorder(B1,E_corr), E_corr)) +
+  geom_boxplot(aes(group = B1)) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  facet_wrap(~tissue, scales = "free") + theme_cowplot() + ggtitle("body")
+E_corr_plot_head = WGCNA_HSBM %>%
+  filter(tissue != "body") %>%
+  ggplot(aes(x=reorder(B1,E_corr), E_corr)) +
+  geom_boxplot(aes(group = B1)) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  facet_wrap(~tissue, scales = "free") + theme_cowplot() + ggtitle("head")
+E_corr_plot = E_corr_plot_body + E_corr_plot_head
+save_plot("SBM_E_corr.png", E_corr_plot, base_width = 5.2, base_height = 3.5)
+
+comparison_plot = function(df) {
+  ggplot(df, aes(B3, WGCNA, color = B4)) +
+  geom_jitter(width = 0.2, height = 0.2, alpha = 0.3, size = 0.2) +
   scale_y_continuous(breaks = 0:25, labels = c("Not\nclustered", 1:25)) + scale_x_continuous(breaks = 0:25) +
   theme_cowplot() + background_grid() + labs(y = "WGCNA Modules", x = "SBM\nLevel-3 blocks") +
-  scale_color_discrete(name = "SBM\nLevel-4") + theme(legend.position = "bottom")
+  scale_color_discrete(name = "SBM\nLevel-4") + 
+  theme(axis.text.x = element_text(size = 8),
+            plot.title = element_text(size = 8), 
+            axis.text.y = element_text(size = 8),
+            axis.title = element_text(size = 8),
+            legend.text = element_text(size = 8),
+            legend.title = element_text(size = 6),
+            axis.ticks.x = element_line(size = .3),
+            axis.ticks.length=unit(.07, "cm")) +
+  theme(legend.position = c(0.85, 0.9), 
+        legend.text = element_text(size = 6), 
+        legend.background = element_rect(fill ="white"), 
+        axis.title.y = element_text(vjust=-10)) + 
+        guides(colour = guide_legend(override.aes = list(size=2.5)))
+}
+
+plot_body = WGCNA_HSBM %>%
+  filter(tissue == "body") %>%
+  mutate(B4 = as.factor(B4), B1 = as.factor(B1)) %>%
+  comparison_plot() + ggtitle("A. Body")
+plot_head = WGCNA_HSBM %>%
+  filter(tissue == "head") %>%
+  mutate(B4 = as.factor(B4), B1 = as.factor(B1)) %>%
+  comparison_plot() + ggtitle("B. Head")
+plot = plot_body + plot_head  
 save_plot("test.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
 
-save_plot("data/output/SBM/plots/WGCNA_comparison.png", plot, base_height = 7, ncol = 2, base_asp = 1.2)
-save_plot("~/Dropbox/labbio/articles/NEX_BodyHead_Control-SBM/figures//WGCNA_comparison.png", plot, base_height = 5, ncol = 2, base_asp = 1.2)
+save_plot("data/output/SBM/plots/WGCNA_comparison.png", plot, base_width = 5.2, base_height = 2.5)
+save_plot(file.path(out_path, "/figures//WGCNA_comparison.png"), plot, base_width = 5.2, base_height = 5.2/2)
 
 for(t in unique(WGCNA_HSBM$tissue)){
   fdr = c("body"= 3, "head"=2)
