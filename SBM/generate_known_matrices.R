@@ -1,14 +1,14 @@
-library(cowplot)
+# pak::pkg_install("devtools")
+# devtools::install_github("diogro/yamda-r", subdir = "package")
 library(yamdar)
 if(!require(patchwork)){pak::pkg_install("patchwork"); library(patchwork)}
 if(!require(ggplot2)){pak::pkg_install("ggplot2"); library(ggplot2)}
 if(!require(cowplot)){pak::pkg_install("cowplot"); library(cowplot)}
 if(!require(ggthemes)){pak::pkg_install("ggthemes"); library(ggthemes)}
 if(!require(RColorBrewer)){pak::pkg_install("RColorBrewer"); library(RColorBrewer)}
-library(evolqg)
-library(mvtnorm)
-pak::pkg_install("WGCNA")
-library(WGCNA)
+if(!require(evolqg)){pak::pkg_install("evolqg"); library(evolqg)}
+if(!require(mvtnorm)){pak::pkg_install("mvtnorm"); library(mvtnorm)}
+if(!require(WGCNA)){pak::pkg_install("WGCNA"); library(WGCNA)}
 
 modules = matrix(c(rep(c(1, 0, 0, 0, 0), each = 10),
                    rep(c(0, 1, 0, 0, 0), each = 10),
