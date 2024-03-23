@@ -62,6 +62,9 @@ head = ldply(enResults_head,
 # Write the results to a file
 write_csv(enTables, pointblank::affix_date(here::here("HotspotGO/HotSpotGoEnrichmentTable.csv")))
 
-enTables |>
+enriched_pos = enTables |>
   group_by(Tissue, Position) |>
   count(name = "terms")
+
+all_pos = c(names(data_body), names(data_head)) 
+length(which(all_pos %in% enriched_pos$Position)) / length(all_pos)
