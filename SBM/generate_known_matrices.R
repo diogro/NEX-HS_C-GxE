@@ -10,6 +10,26 @@ if(!require(evolqg)){pak::pkg_install("evolqg"); library(evolqg)}
 if(!require(mvtnorm)){pak::pkg_install("mvtnorm"); library(mvtnorm)}
 if(!require(WGCNA)){pak::pkg_install("WGCNA"); library(WGCNA)}
 
+corrPlot = function(M, title = ""){
+melted_cormat <- reshape2::melt(M)
+    heatmap = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
+        geom_tile() +
+        scale_fill_gradientn(colours=brewer.pal(11, "RdBu"), 
+                             limits = c(-1, 1), 
+                              breaks=c(-1, -0.5, 0 , 0.5, 1))  + 
+        labs(x = "Traits", y = "") +
+        coord_fixed() + 
+        theme_tufte() + ggtitle(title) + 
+        theme(legend.position = "bottom",
+              legend.key.width= unit(1.5, 'cm'), 
+              legend.title = element_blank(),
+              plot.title = element_text(size = 14),
+              axis.title = element_text(size = 12),
+              axis.text.y = element_text(size = 6),
+              axis.text.x = element_text(size = 6))
+    heatmap
+}
+
 modules = matrix(c(rep(c(1, 0, 0, 0, 0), each = 10),
                    rep(c(0, 1, 0, 0, 0), each = 10),
                    rep(c(0, 0, 1, 0, 0), each = 10),
@@ -24,34 +44,37 @@ png("test.png")
 corrPlot(mod.cor)
 dev.off()
 
-between = mod.cor[45, 50]
-mod.cor[1:5, 1:5] = 0.1
-diag(mod.cor) = 1
-write.csv(mod.cor, "SBM/non_modular_matrix.csv")
-pop = rmvnorm(1000, sigma = mod.cor)
+non.mod.cor = mod.cor
+between = non.mod.cor[45, 50]
+non.mod.cor[1:5, 1:5] = 0.1
+diag(non.mod.cor) = 1
+write.csv(non.mod.cor, "SBM/non_modular_matrix.csv")
 
 
 mod.cor[1:10, 1:10]
-png("test.png")
-corrPlot(mod.cor)
-dev.off()
-corrPlot = function(M, title = ""){
-melted_cormat <- reshape2::melt(M)
-    heatmap = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
-        geom_tile() +
-        scale_fill_gradientn(colours=brewer.pal(11, "RdBu"), 
-                             limits = c(-1, 1), 
-                              breaks=c(-1, -0.5, 0 , 0.5, 1))  + 
-        labs(x = "Traits", y = "") +
-        theme_tufte() + ggtitle(title) + 
-        theme(legend.position = "bottom",
-              legend.key.width= unit(1.5, 'cm'), 
-              legend.title = element_blank(),
-              plot.title = element_text(size = 14),
-              axis.title = element_text(size = 12),
-              axis.text.y = element_text(size = 6),
-              axis.text.x = element_text(size = 6, angle = 90))
-    heatmap
-}
+save_plot("SBM/modular_matrix.pdf", corrPlot(mod.cor))
+save_plot("SBM/non_modular_matrix.pdf", corrPlot(non.mod.cor))
 
-hclust(pop)
+## WGCNA
+
+dissTOM = 1 - TOMsimilarity(mod.cor^2)
+hierTOM = hclust(as.dist(dissTOM),method="average");
+colorDynamicTOM = labels2colors (cutreeDynamic(hierTOM, distM = dissTOM,cutHeight = 0.95, minClusterSize = 3))
+body_modules = cutreeDynamic(hierTOM, method="tree")
+svg("SBM/modular_dendrogram.svg", width = 3, height = 1.8, pointsize = 6)
+plotDendroAndColors(hierTOM,
+                    colors=data.frame(colorDynamicTOM),
+                    dendroLabels = FALSE, marAll = c(1, 8, 3, 1),
+                    main = "")
+dev.off()
+
+dissTOM = 1 - TOMsimilarity(non.mod.cor^2)
+hierTOM = hclust(as.dist(dissTOM),method="average");
+colorDynamicTOM = labels2colors (cutreeDynamic(hierTOM, distM = dissTOM,cutHeight = 0.95, minClusterSize = 3))
+body_modules = cutreeDynamic(hierTOM, method="tree")
+pdf("SBM/non_modular_dendrogram.svg", width = 3, height = 1.8, pointsize = 6)
+plotDendroAndColors(hierTOM,
+                    colors=data.frame(colorDynamicTOM),
+                    dendroLabels = FALSE, marAll = c(1, 8, 3, 1))
+                    #main = "Gene dendrogram and module colors, TOM dissimilarity")
+dev.off()
