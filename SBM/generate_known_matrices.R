@@ -59,9 +59,20 @@ save_plot("SBM/non_modular_matrix.pdf", corrPlot(non.mod.cor))
 
 dissTOM = 1 - TOMsimilarity(mod.cor^2)
 hierTOM = hclust(as.dist(dissTOM),method="average");
-colorDynamicTOM = labels2colors (cutreeDynamic(hierTOM, distM = dissTOM,cutHeight = 0.95, minClusterSize = 3))
-body_modules = cutreeDynamic(hierTOM, method="tree")
-svg("SBM/modular_dendrogram.svg", width = 3, height = 1.8, pointsize = 6)
+colorDynamicTOM = labels2colors (cutreeDynamic(hierTOM, distM = dissTOM, cutHeight = 0.95, minClusterSize = 3))
+pdf("SBM/modular_dendrogram.pdf", width = 3, height = 1.8, pointsize = 6)
+plotDendroAndColors(hierTOM,
+                    colors=data.frame(colorDynamicTOM),
+                    dendroLabels = FALSE, marAll = c(1, 8, 3, 1),
+                    main = "")
+dev.off()
+
+modular_matrix <- read.csv("SBM/modular_matrix_trimed.csv", header = FALSE)
+modular_matrix <- as.matrix(modular_matrix)
+dissTOM = 1 - TOMsimilarity(modular_matrix^2)
+hierTOM = hclust(as.dist(dissTOM),method="average");
+colorDynamicTOM = labels2colors (cutreeDynamic(hierTOM, distM = dissTOM,cutHeight = 0.99, minClusterSize = 3))
+pdf("SBM/modular_dendrogram_trimmed.pdf", width = 3, height = 1.8, pointsize = 6)
 plotDendroAndColors(hierTOM,
                     colors=data.frame(colorDynamicTOM),
                     dendroLabels = FALSE, marAll = c(1, 8, 3, 1),
@@ -70,11 +81,22 @@ dev.off()
 
 dissTOM = 1 - TOMsimilarity(non.mod.cor^2)
 hierTOM = hclust(as.dist(dissTOM),method="average");
-colorDynamicTOM = labels2colors (cutreeDynamic(hierTOM, distM = dissTOM,cutHeight = 0.95, minClusterSize = 3))
-body_modules = cutreeDynamic(hierTOM, method="tree")
-pdf("SBM/non_modular_dendrogram.svg", width = 3, height = 1.8, pointsize = 6)
+colorDynamicTOM = labels2colors (cutreeDynamic(hierTOM, distM = dissTOM,cutHeight = 0.99, minClusterSize = 3))
+pdf("SBM/non_modular_dendrogram.pdf", width = 3, height = 1.8, pointsize = 6)
 plotDendroAndColors(hierTOM,
                     colors=data.frame(colorDynamicTOM),
                     dendroLabels = FALSE, marAll = c(1, 8, 3, 1))
                     #main = "Gene dendrogram and module colors, TOM dissimilarity")
+dev.off()
+
+non_modular_matrix <- read.csv("SBM/non_modular_matrix_trimed.csv", header = FALSE)
+non_modular_matrix <- as.matrix(non_modular_matrix)
+dissTOM = 1 - TOMsimilarity(non_modular_matrix^2)
+hierTOM = hclust(as.dist(dissTOM),method="average");
+colorDynamicTOM = labels2colors (cutreeDynamic(hierTOM, distM = dissTOM,cutHeight = 0.99, minClusterSize = 3))
+pdf("SBM/non_modular_dendrogram_trimmed.pdf", width = 3, height = 1.8, pointsize = 6)
+plotDendroAndColors(hierTOM,
+                    colors=data.frame(colorDynamicTOM),
+                    dendroLabels = FALSE, marAll = c(1, 8, 3, 1),
+                    main = "")
 dev.off()
