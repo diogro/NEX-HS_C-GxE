@@ -89,10 +89,10 @@ if not os.path.exists(graph_folder):
     os.makedirs(graph_folder)
 
 # Check if the file exists
-if os.path.exists(output_folder + "SBM_head_150_vertices.xml.gz"):
+if os.path.exists(output_folder + "SBM_head_" + str(nodes) + "_vertices.xml.gz"):
     # If it does, load the graph from the file
     print("Loading small head graph")
-    g_total = load_graph(output_folder + "SBM_head_150_vertices.xml.gz")
+    g_total = load_graph(output_folder + "SBM_head_" + str(nodes) + "_vertices.xml.gz")
 else:
     print("Loading head graph")
     g_head = load_graph(folder + "VOOMCounts_CPM1_head_ctrl_248ind_counts3M_covfree_Aug3121.xml.gz")
@@ -124,7 +124,7 @@ for i in fdr_list:
         print("Loading block state for FDR: ", i)
         with open(graph_folder + "SBM_FDR-" + str(i) +  "_blocks.dill", 'rb') as fh:
             block_state = dill.load(fh)
-        state[i] = minimize_nested_blockmodel_dl(g[i], bs = block_state,
+        state[i] = minimize_nested_blockmodel_dl(g[i], init_bs = block_state,
                                                  state_args=dict(recs=[g[i].ep.weight],
                                                  rec_types=["real-normal"]))
     else:
@@ -154,6 +154,9 @@ for i in fdr_list:
     print("Disambiguating partitions for FDR: ", i)
     pmode = PartitionModeState(bs, nested=True, converge=True)
     pv = pmode.get_marginal(g[i])
+
+    g[i].vp.pv = g[i].new_vertex_property("int")
+    g[i].vp.pv = pv
 
     print("Getting consensus estimate for FDR: ", i)
     bs = pmode.get_max_nested()
@@ -190,5 +193,54 @@ for i in fdr_list:
 
     print("Saving graph for FDR: ", i)
     g[i].save(graph_folder + "SBM_FDR-" + str(i) +  "_graph.xml.gz")
+
+n_block = {}
+for i in fdr_list:
+    bs = state[i].get_bs()[0]
+    # get number of distinct blocks in bs
+    n_block[i] = len(set(bs))
+# get key of shortest block
+key = min(n_block, key=n_block.get)
+
+print("Aligning partitions")
+ref = state[key].get_bs()[0]
+aligned_bs = {} 
+for i in fdr_list:
+    bs = state[i].get_bs()[0]
+    aligned_bs[i] = align_partition_labels(bs, ref)
+
+for i in fdr_list:
+    print("Drawing graph for FDR: ", i)
+    g[i].vp.aligned_bs = g[i].new_vertex_property("int", aligned_bs[i])
+    graph_draw(g[i], 
+               pos = pos, 
+               edge_pen_width = g[i].ep.weight, 
+               eorder=g[i].ep.weight,
+               vertex_color=g[i].vp.aligned_bs, vertex_fill_color=g[i].vp.aligned_bs,
+               edge_color=prop_to_size(g[i].ep.weight, mi=-4, ma=4, power=1, log=False),
+               ecmap=(mpl.inferno, .6), 
+               edge_gradient=[], 
+               output = plot_folder + "network-SBM_FDR-" + str(i) + "_graph.png")
+    
+    graph_draw(g[i], 
+               pos = pos, 
+               vertex_shape="pie", vertex_pie_fractions=g[i].vp.pv,
+               edge_pen_width = g[i].ep.weight, 
+               eorder=g[i].ep.weight,
+               edge_color=prop_to_size(g[i].ep.weight, mi=-4, ma=4, power=1, log=False),
+               ecmap=(mpl.inferno, .6), 
+               edge_gradient=[], 
+               output = plot_folder + "network-SBM_FDR-" + str(i) + "_graph_pie.png")
+    
+    print("Drawing circle graphs for FDR: ", i)
+    state[i].draw(output=plot_folder + "circle-SBM_FDR-" + str(i) + "_graph.png", 
+                  eorder=g[i].ep.weight,
+                  edge_color=prop_to_size(g[i].ep.weight, mi=-4, ma=4, power=1, log=False),
+                  ecmap=(mpl.inferno, .6), 
+                  edge_gradient=[], 
+                  hvertex_size = 15,
+                  hedge_pen_width = 3,
+                  vertex_color = g[i].vp.aligned_bs,
+                  vertex_fill_color = g[i].vp.aligned_bs)
 
 print("Done")
