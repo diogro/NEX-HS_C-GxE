@@ -100,3 +100,28 @@ plotDendroAndColors(hierTOM,
                     dendroLabels = FALSE, marAll = c(1, 8, 3, 1),
                     main = "")
 dev.off()
+
+
+body_matrix <- read.csv("SBM/body_matrix_trimed.csv", header = FALSE)
+body_matrix <- as.matrix(body_matrix)
+dissTOM = 1 - TOMsimilarity(body_matrix^2)
+hierTOM = hclust(as.dist(dissTOM),method="average");
+colorDynamicTOM = labels2colors (cutreeDynamic(hierTOM, distM = dissTOM,cutHeight = 0.99, minClusterSize = 3))
+pdf("SBM/body_matrix_trimed_WGCNA.pdf", width = 3, height = 1.8, pointsize = 6)
+plotDendroAndColors(hierTOM,
+                    colors=data.frame(colorDynamicTOM),
+                    dendroLabels = FALSE, marAll = c(1, 8, 3, 1),
+                    main = "")
+dev.off()
+
+head_matrix <- read.csv("SBM/head_matrix_trimed.csv", header = FALSE)
+head_matrix <- as.matrix(head_matrix)
+dissTOM = 1 - TOMsimilarity(head_matrix^2)
+hierTOM = hclust(as.dist(dissTOM),method="average");
+colorDynamicTOM = labels2colors (cutreeDynamic(hierTOM, distM = dissTOM,cutHeight = 0.99, minClusterSize = 3))
+pdf("SBM/head_matrix_trimed_WGCNA.pdf", width = 3, height = 1.8, pointsize = 6)
+plotDendroAndColors(hierTOM,
+                    colors=data.frame(colorDynamicTOM),
+                    dendroLabels = FALSE, marAll = c(1, 8, 3, 1),
+                    main = "")
+dev.off()
