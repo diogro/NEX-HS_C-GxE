@@ -1,5 +1,5 @@
 pak::pkg_install(c("plyr",  "ggplot2", "corpcor", "evolqg", "tidyverse", "cowplot", "patchwork", "psych", "WGCNA", "tictoc"))
-library(plyr)
+isntallibrary(plyr)
 library(ggplot2)
 library(corpcor)
 library(evolqg)
